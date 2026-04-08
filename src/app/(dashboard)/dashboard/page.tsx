@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Layers, HelpCircle, BarChart3, Compass, ShieldCheck, Swords, Users, Sparkles, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyDashboard, StarBurst, LeafSprig } from "@/components/illustrations/capi-illustrations";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +53,11 @@ export default async function DashboardPage() {
               Centralise tes decks, tes quizzes et tes sessions dans un board visuel pensé pour le focus.
             </p>
           </div>
-          <FlashMasterLogo size="md" className="rounded-2xl border border-[#ddd2be] bg-white/72 px-3 py-2" />
+          <div className="flex items-end gap-1">
+            <LeafSprig className="h-16 opacity-70" />
+            <CapyDashboard className="h-32 drop-shadow-sm" />
+            <LeafSprig className="h-14 opacity-60 scale-x-[-1]" />
+          </div>
         </div>
       </div>
 

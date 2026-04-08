@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { parseCategoryPath, normalizeCategoryScope } from "@/lib/utils/ranked";
 import type { QuestionReviewQueueItem, Quiz } from "@/lib/types";
 import { CheckCircle2, PencilLine, ThumbsDown, ThumbsUp, Timer, Layers, HelpCircle, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyCheck } from "@/components/illustrations/capi-illustrations";
 
 type QueueRow = QuestionReviewQueueItem & {
   quizzes?: Pick<Quiz, "id" | "title" | "category" | "category_path">;
@@ -240,12 +240,8 @@ export default function CheckPage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">Moderation collaborative avec seuil de validation automatique</p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end justify-center">
+              <CapyCheck className="h-36 drop-shadow-sm" />
             </div>
           </div>
         </div>

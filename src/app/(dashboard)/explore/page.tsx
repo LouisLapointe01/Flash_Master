@@ -9,7 +9,7 @@ import { Search, Layers, HelpCircle, Copy, Eye, User, ShieldCheck, Swords, Users
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Deck, Quiz } from "@/lib/types";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyExplore, StarBurst } from "@/components/illustrations/capi-illustrations";
 import { normalizeCategoryScope } from "@/lib/utils/ranked";
 import { clsx } from "clsx";
 
@@ -152,14 +152,8 @@ export default function ExplorePage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">
-                  {tab === "decks" ? `${decks.length} decks publics` : `${quizzes.length} quizzes publics`}
-                </p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end justify-center">
+              <CapyExplore className="h-36 drop-shadow-sm" />
             </div>
           </div>
         </div>
@@ -182,7 +176,7 @@ export default function ExplorePage() {
                 <div className="cover-art cover-art-deck mb-3">
                   <div className="cover-art-meta">
                     <span className="cover-art-tag">Deck public</span>
-                    <FlashMasterLogo size="sm" withWordmark={false} className="rounded-[0.8rem] bg-white/72 p-1" />
+                    <StarBurst className="h-7 w-7 opacity-80" />
                   </div>
                   <p className="relative z-[1] mt-3 max-w-[15rem] truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#4a5d61]">
                     {normalizeCategoryScope(deck.category_path, deck.category)}
@@ -239,7 +233,7 @@ export default function ExplorePage() {
                 <div className="cover-art cover-art-quiz mb-3">
                   <div className="cover-art-meta">
                     <span className="cover-art-tag">Quiz public</span>
-                    <FlashMasterLogo size="sm" withWordmark={false} className="rounded-[0.8rem] bg-white/72 p-1" />
+                    <StarBurst className="h-7 w-7 opacity-80" />
                   </div>
                   <p className="relative z-[1] mt-3 max-w-[15rem] truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#4a5d61]">
                     {normalizeCategoryScope(quiz.category_path, quiz.category)}

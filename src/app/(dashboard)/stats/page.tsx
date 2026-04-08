@@ -6,7 +6,7 @@ import { format, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { BarChart3, BookOpen, HelpCircle, Target, Clock, TrendingUp, Layers, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyStats } from "@/components/illustrations/capi-illustrations";
 
 interface StatsData {
   totalDecks: number;
@@ -123,12 +123,8 @@ export default function StatsPage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">{data.totalStudySessions + data.totalQuizSessions} sessions recensees</p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end justify-center">
+              <CapyStats className="h-36 drop-shadow-sm" />
             </div>
           </div>
         </div>

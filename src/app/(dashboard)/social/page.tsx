@@ -9,7 +9,7 @@ import { clsx } from "clsx";
 import { normalizeCategoryScope } from "@/lib/utils/ranked";
 import { Handshake, Send, Shield, Trophy, Users, Layers, HelpCircle, Swords, ShieldCheck, Sparkles } from "lucide-react";
 import type { Quiz } from "@/lib/types";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapySocial } from "@/components/illustrations/capi-illustrations";
 
 type FriendshipRow = {
   id: string;
@@ -289,12 +289,8 @@ export default function SocialPage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">Repertoire social, associations et challenges entre proches</p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end justify-center">
+              <CapySocial className="h-36 drop-shadow-sm" />
             </div>
           </div>
         </div>

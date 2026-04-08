@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { clsx } from "clsx";
 import { Flame, Medal, Swords, Target, Trophy, Layers, HelpCircle, ShieldCheck, Users, Sparkles } from "lucide-react";
 import type { RankedProfile } from "@/lib/types";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyRanked } from "@/components/illustrations/capi-illustrations";
 import {
   getNextTier,
   getTierFromPoints,
@@ -163,12 +163,8 @@ export default function RankedPage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">General + categories specialisees avec progression RP</p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end justify-center">
+              <CapyRanked className="h-36 drop-shadow-sm" />
             </div>
           </div>
         </div>

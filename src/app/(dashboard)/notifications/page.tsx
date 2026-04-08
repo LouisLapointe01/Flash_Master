@@ -8,7 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Notification } from "@/lib/types";
 import Link from "next/link";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyNotif } from "@/components/illustrations/capi-illustrations";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -96,12 +96,8 @@ export default function NotificationsPage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">Inbox personnel synchronise en temps reel</p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end justify-center">
+              <CapyNotif className="h-36 drop-shadow-sm" />
             </div>
           </div>
         </div>

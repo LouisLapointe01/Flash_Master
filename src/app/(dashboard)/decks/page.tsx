@@ -5,7 +5,7 @@ import { DeckCard } from "@/components/flashcards/deck-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus, Layers, HelpCircle, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
-import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { CapyDecks, LeafSprig } from "@/components/illustrations/capi-illustrations";
 
 export default function DecksPage() {
   const { decks, loading, deleteDeck } = useDecks();
@@ -71,12 +71,10 @@ export default function DecksPage() {
                 <Sparkles size={14} />
               </span>
             </div>
-            <div className="relative z-[1] mt-4 space-y-3">
-              <FlashMasterLogo size="md" className="rounded-2xl bg-white/70 px-3 py-2" />
-              <div className="mind-note rounded-[1rem] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#706a5d]">Rubrique active</p>
-                <p className="mt-1 text-sm text-[#3d3a33]">Collections memo avec vue cartes + revision rapide</p>
-              </div>
+            <div className="relative z-[1] mt-2 flex items-end gap-2">
+              <LeafSprig className="h-16 opacity-80" />
+              <CapyDecks className="h-36 drop-shadow-sm" />
+              <LeafSprig className="h-14 opacity-60 scale-x-[-1]" />
             </div>
           </div>
         </div>
