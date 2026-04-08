@@ -218,6 +218,10 @@ h6 {
   animation: soft-pulse 3.4s ease-in-out infinite, capi-bob 5.6s ease-in-out infinite;
 }
 
+.capi-illus-bob {
+  animation: capi-bob 5.6s ease-in-out infinite;
+}
+
 .logo-playful {
   font-family: var(--font-title), var(--font-body), sans-serif;
   font-weight: 800;
