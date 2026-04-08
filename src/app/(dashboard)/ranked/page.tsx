@@ -33,7 +33,7 @@ function getQuestionCount(quiz: QuizWithCount) {
 }
 
 export default function RankedPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<QuizWithCount[]>([]);
   const [profiles, setProfiles] = useState<RankedProfile[]>([]);

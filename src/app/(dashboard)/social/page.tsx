@@ -40,7 +40,7 @@ type ChallengeRow = {
 };
 
 export default function SocialPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState(true);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [friendships, setFriendships] = useState<FriendshipRow[]>([]);

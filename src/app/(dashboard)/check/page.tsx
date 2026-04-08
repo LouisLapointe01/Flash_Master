@@ -35,7 +35,7 @@ const EMPTY_ANSWERS = [
 ];
 
 export default function CheckPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState(true);
   const [queueItems, setQueueItems] = useState<QueueRow[]>([]);
   const [myQuizzes, setMyQuizzes] = useState<Array<Pick<Quiz, "id" | "title" | "category" | "category_path">>>([]);

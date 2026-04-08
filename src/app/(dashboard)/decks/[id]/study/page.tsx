@@ -25,7 +25,7 @@ export default function StudyPage({
   const [studied, setStudied] = useState(0);
   const [finished, setFinished] = useState(false);
   const startTimeRef = useRef(0);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const cards = useMemo(() => deck?.flashcards ?? [], [deck?.flashcards]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { acceptSuggestion, rejectSuggestion } from "@/lib/actions/suggestions";
 import { DiffViewer } from "@/components/suggestions/diff-viewer";
@@ -19,7 +19,7 @@ export default function SuggestionsPage() {
   const [sent, setSent] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     async function load() {

@@ -103,7 +103,7 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
   const questionStartedAtRef = useRef(0);
   const quizStartedAtRef = useRef(0);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const questions = useMemo(() => quiz?.quiz_questions ?? [], [quiz?.quiz_questions]);
   const currentQuestion = questions[currentIndex];

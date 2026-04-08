@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Bell, Settings, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
 
 interface TopbarProps {
@@ -63,7 +63,7 @@ function getPageContext(pathname: string) {
 export function Topbar({ displayName }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [unreadCount, setUnreadCount] = useState(0);
   const page = getPageContext(pathname);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, CheckCheck, Trash2, Layers, HelpCircle, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
@@ -13,7 +13,7 @@ import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     async function load() {
