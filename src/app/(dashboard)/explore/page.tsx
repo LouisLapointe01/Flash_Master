@@ -95,17 +95,7 @@ export default function ExplorePage() {
           <div className="space-y-4">
             <div>
               <p className="hud-chip">Community Explore</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Explorer</h1>
-              <p className="mt-1 text-sm text-[#676258]">Decouvre les decks et quizzes publics de la communaute.</p>
-            </div>
-
-            <div className="rubric-strip">
-              <Link href="/decks" className="rubric-link"><Layers size={13} />Decks</Link>
-              <Link href="/quizzes" className="rubric-link"><HelpCircle size={13} />Quiz</Link>
-              <Link href="/ranked" className="rubric-link"><Swords size={13} />Ranked</Link>
-              <Link href="/check" className="rubric-link"><ShieldCheck size={13} />Check</Link>
-              <Link href="/social" className="rubric-link"><Users size={13} />Social</Link>
-              <Link href="/explore" className="rubric-link rubric-link-active"><Compass size={13} />Explore</Link>
+              <h1 className="page-title mt-2">Explorer</h1>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">

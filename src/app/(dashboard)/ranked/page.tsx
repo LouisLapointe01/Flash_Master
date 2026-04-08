@@ -124,18 +124,7 @@ export default function RankedPage() {
           <div className="space-y-4">
             <div>
               <p className="hud-chip">Ranked Arena</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Mode classe</h1>
-              <p className="mt-1 text-sm text-[#676258]">
-                Quiz illimites, points qui montent et descendent, paliers de plus en plus exigeants.
-              </p>
-            </div>
-
-            <div className="rubric-strip">
-              <Link href="/decks" className="rubric-link"><Layers size={13} />Decks</Link>
-              <Link href="/quizzes" className="rubric-link"><HelpCircle size={13} />Quiz</Link>
-              <Link href="/ranked" className="rubric-link rubric-link-active"><Swords size={13} />Ranked</Link>
-              <Link href="/check" className="rubric-link"><ShieldCheck size={13} />Check</Link>
-              <Link href="/social" className="rubric-link"><Users size={13} />Social</Link>
+              <h1 className="page-title mt-2">Mode classe</h1>
             </div>
 
             <div className="min-w-[16rem] rounded-[1.1rem] border border-[#d3c392] bg-[linear-gradient(160deg,#fff7df,#f8efd2)] p-3">

@@ -99,21 +99,9 @@ export default function StatsPage() {
     <div className="space-y-6">
       <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
         <div className="section-hero">
-          <div className="space-y-4">
-            <div>
-              <p className="hud-chip">Performance Board</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Statistiques</h1>
-              <p className="mt-1 text-sm text-[#676258]">Analyse tes sessions, ta precision et ton rythme sur 14 jours.</p>
-            </div>
-
-            <div className="rubric-strip">
-              <Link href="/decks" className="rubric-link"><Layers size={13} />Decks</Link>
-              <Link href="/quizzes" className="rubric-link"><HelpCircle size={13} />Quiz</Link>
-              <Link href="/ranked" className="rubric-link"><Swords size={13} />Ranked</Link>
-              <Link href="/check" className="rubric-link"><ShieldCheck size={13} />Check</Link>
-              <Link href="/social" className="rubric-link"><Users size={13} />Social</Link>
-              <Link href="/stats" className="rubric-link rubric-link-active"><BarChart3 size={13} />Stats</Link>
-            </div>
+          <div>
+            <p className="hud-chip">Performance Board</p>
+            <h1 className="page-title mt-2">Statistiques</h1>
           </div>
 
           <div className="section-hero-visual">

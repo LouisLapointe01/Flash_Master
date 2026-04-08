@@ -10,14 +10,6 @@ import { CapyDecks, LeafSprig } from "@/components/illustrations/capi-illustrati
 export default function DecksPage() {
   const { decks, loading, deleteDeck } = useDecks();
 
-  const rubriques = [
-    { href: "/decks", label: "Collections", icon: Layers, active: true },
-    { href: "/quizzes", label: "Quiz", icon: HelpCircle },
-    { href: "/ranked", label: "Ranked", icon: Swords },
-    { href: "/check", label: "Check", icon: ShieldCheck },
-    { href: "/social", label: "Social", icon: Users },
-  ];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -33,19 +25,7 @@ export default function DecksPage() {
           <div className="space-y-4">
             <div>
               <p className="hud-chip">Collection Studio</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Mes Decks</h1>
-              <p className="mt-1 text-sm text-[#676258]">
-                {decks.length} deck{decks.length !== 1 ? "s" : ""} organises par rubrique et progression.
-              </p>
-            </div>
-
-            <div className="rubric-strip">
-              {rubriques.map((item) => (
-                <Link key={item.href} href={item.href} className={item.active ? "rubric-link rubric-link-active" : "rubric-link"}>
-                  <item.icon size={13} />
-                  {item.label}
-                </Link>
-              ))}
+              <h1 className="page-title mt-2">Mes Decks</h1>
             </div>
 
             <div className="flex flex-wrap gap-2">

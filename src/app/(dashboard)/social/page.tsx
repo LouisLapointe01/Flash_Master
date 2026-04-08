@@ -266,20 +266,9 @@ export default function SocialPage() {
     <div className="space-y-6">
       <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
         <div className="section-hero">
-          <div className="space-y-4">
-            <div>
-              <p className="hud-chip">Social Hub</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Amis, associations et duels</h1>
-              <p className="mt-1 text-sm text-[#676258]">Ajoute des amis, rejoins des groupes, puis lance des sessions ranked ou training ensemble.</p>
-            </div>
-
-            <div className="rubric-strip">
-              <Link href="/decks" className="rubric-link"><Layers size={13} />Decks</Link>
-              <Link href="/quizzes" className="rubric-link"><HelpCircle size={13} />Quiz</Link>
-              <Link href="/ranked" className="rubric-link"><Swords size={13} />Ranked</Link>
-              <Link href="/check" className="rubric-link"><ShieldCheck size={13} />Check</Link>
-              <Link href="/social" className="rubric-link rubric-link-active"><Users size={13} />Social</Link>
-            </div>
+          <div>
+            <p className="hud-chip">Social Hub</p>
+            <h1 className="page-title mt-2">Social</h1>
           </div>
 
           <div className="section-hero-visual">

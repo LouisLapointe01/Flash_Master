@@ -64,28 +64,16 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
         <div className="section-hero">
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
               <p className="hud-chip">Notification Center</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Notifications</h1>
-              <p className="mt-1 text-sm text-[#676258]">{unreadCount} non lue(s) sur ton flux d&apos;activite.</p>
-            </div>
-
-            <div className="rubric-strip">
-              <Link href="/decks" className="rubric-link"><Layers size={13} />Decks</Link>
-              <Link href="/quizzes" className="rubric-link"><HelpCircle size={13} />Quiz</Link>
-              <Link href="/ranked" className="rubric-link"><Swords size={13} />Ranked</Link>
-              <Link href="/check" className="rubric-link"><ShieldCheck size={13} />Check</Link>
-              <Link href="/social" className="rubric-link"><Users size={13} />Social</Link>
-              <Link href="/notifications" className="rubric-link rubric-link-active"><Bell size={13} />Notifications</Link>
+              <h1 className="page-title mt-2">Notifications</h1>
             </div>
 
             {unreadCount > 0 ? (
-              <div>
-                <Button variant="secondary" size="sm" onClick={markAllAsRead}>
-                  <CheckCheck size={14} /> Tout marquer comme lu
-                </Button>
-              </div>
+              <Button variant="secondary" size="sm" onClick={markAllAsRead}>
+                <CheckCheck size={14} /> Tout marquer comme lu
+              </Button>
             ) : null}
           </div>
 

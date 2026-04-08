@@ -10,14 +10,6 @@ import { CapyQuiz } from "@/components/illustrations/capi-illustrations";
 export default function QuizzesPage() {
   const { quizzes, loading, deleteQuiz } = useQuizzes();
 
-  const rubriques = [
-    { href: "/decks", label: "Decks", icon: Layers },
-    { href: "/quizzes", label: "Quiz", icon: HelpCircle, active: true },
-    { href: "/ranked", label: "Ranked", icon: Swords },
-    { href: "/check", label: "Check", icon: ShieldCheck },
-    { href: "/social", label: "Social", icon: Users },
-  ];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -33,19 +25,7 @@ export default function QuizzesPage() {
           <div className="space-y-4">
             <div>
               <p className="hud-chip">Quiz Arena</p>
-              <h1 className="mt-3 text-2xl font-semibold text-[#2b303a]">Mes Quizzes</h1>
-              <p className="mt-1 text-sm text-[#676258]">
-                {quizzes.length} quiz{quizzes.length !== 1 ? "zes" : ""} avec categorisation et modes classes.
-              </p>
-            </div>
-
-            <div className="rubric-strip">
-              {rubriques.map((item) => (
-                <Link key={item.href} href={item.href} className={item.active ? "rubric-link rubric-link-active" : "rubric-link"}>
-                  <item.icon size={13} />
-                  {item.label}
-                </Link>
-              ))}
+              <h1 className="page-title mt-2">Mes Quizzes</h1>
             </div>
 
             <div className="flex flex-wrap gap-2">

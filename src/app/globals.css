@@ -222,6 +222,17 @@ h6 {
   animation: capi-bob 5.6s ease-in-out infinite;
 }
 
+.page-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  background: linear-gradient(130deg, #1e2530 0%, #5c4a34 55%, #8a7258 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .logo-playful {
   font-family: var(--font-title), var(--font-body), sans-serif;
   font-weight: 800;
