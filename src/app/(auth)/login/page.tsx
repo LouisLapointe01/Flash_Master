@@ -23,10 +23,18 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let authError;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      authError = error;
+    } catch {
+      setError("Impossible de joindre le serveur. Vérifie ta connexion.");
+      setLoading(false);
+      return;
+    }
 
-    if (error) {
-      setError(error.message);
+    if (authError) {
+      setError(authError.message);
       setLoading(false);
       return;
     }
