@@ -5,9 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
-import { ArrowLeft, Moon, SunMedium, Trophy } from "lucide-react";
+import { ArrowLeft, Moon, Search, SunMedium, Trophy } from "lucide-react";
 import { HudBellIcon, HudCogIcon, HudExitIcon } from "./hud-icons";
 import { getTierFromPoints } from "@/lib/utils/ranked";
+import { GlobalSearch } from "@/components/ui/global-search";
 
 interface TopbarProps {
   displayName: string;
@@ -78,6 +79,7 @@ export function Topbar({ displayName }: TopbarProps) {
   const supabase = useMemo(() => createClient(), []);
   const [unreadCount, setUnreadCount] = useState(0);
   const [rankHud, setRankHud] = useState<RankHudSummary | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof document === "undefined") return "dark";
     return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
@@ -153,6 +155,18 @@ export function Topbar({ displayName }: TopbarProps) {
     };
   }, [supabase]);
 
+  // Cmd+K / Ctrl+K shortcut
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   function toggleTheme() {
     const nextTheme: ThemeMode = theme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
@@ -171,6 +185,8 @@ export function Topbar({ displayName }: TopbarProps) {
   }
 
   return (
+    <>
+    <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     <header
       className="topbar-shell animate-in-up relative z-20 mx-3 mt-3 flex min-h-16 items-center justify-between gap-3 px-4 py-3 lg:mx-6 lg:px-6"
       aria-label={`Session ${displayName}`}
@@ -191,6 +207,24 @@ export function Topbar({ displayName }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Search button */}
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="topbar-pill hidden items-center gap-2 px-3 py-1.5 sm:inline-flex"
+          title="Recherche globale (Ctrl+K)"
+        >
+          <Search size={13} className="text-[var(--text-muted)]" />
+          <span className="font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">Rechercher</span>
+          <kbd className="rounded border border-[var(--line)] bg-[var(--surface-soft)] px-1 py-0.5 text-[9px] font-bold text-[var(--text-muted)]">⌘K</kbd>
+        </button>
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="topbar-action p-2 sm:hidden"
+          title="Recherche (Ctrl+K)"
+        >
+          <Search size={18} />
+        </button>
+
         <Link
           href="/settings?view=rank"
           className="topbar-pill inline-flex items-center gap-2 px-3 py-1.5 font-mono text-[11px] font-black uppercase tracking-[0.08em] text-[var(--foreground)]"
@@ -238,5 +272,6 @@ export function Topbar({ displayName }: TopbarProps) {
         </button>
       </div>
     </header>
+    </>
   );
 }
