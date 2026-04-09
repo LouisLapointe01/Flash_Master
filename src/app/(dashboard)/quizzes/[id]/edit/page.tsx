@@ -57,25 +57,21 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
 
     const { data: answers } = await supabase.from("quiz_answers").insert(answersData).select();
 
-    setQuiz((prev) => {
-      if (!prev) return prev;
-      const newQ = { ...question, quiz_answers: answers ?? [] } as QuizQuestion;
-      return { ...prev, quiz_questions: [...(prev.quiz_questions ?? []), newQ] };
+    setQuiz({
+      ...quiz!,
+      quiz_questions: [...(quiz!.quiz_questions ?? []), { ...question, quiz_answers: answers ?? [] } as QuizQuestion],
     });
     setShowAddQuestion(false);
   }
 
   async function handleDeleteQuestion(questionId: string) {
     await supabase.from("quiz_questions").delete().eq("id", questionId);
-    setQuiz((prev) => {
-      if (!prev) return prev;
-      return { ...prev, quiz_questions: prev.quiz_questions?.filter((q) => q.id !== questionId) };
-    });
+    setQuiz({ ...quiz!, quiz_questions: quiz!.quiz_questions?.filter((q) => q.id !== questionId) });
   }
 
   async function handleUpdateQuiz(values: Record<string, unknown>) {
     await supabase.from("quizzes").update(values).eq("id", id);
-    setQuiz((prev) => (prev ? { ...prev, ...values } : prev));
+    setQuiz({ ...quiz!, ...values } as typeof quiz);
     setEditingQuiz(false);
   }
 
@@ -157,14 +153,11 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
                   await supabase.from("quiz_answers").delete().eq("question_id", q.id);
                   const answersData = values.answers.map((a, j) => ({ question_id: q.id, answer_text: a.answer_text, is_correct: a.is_correct, position: j }));
                   const { data: newAnswers } = await supabase.from("quiz_answers").insert(answersData).select();
-                  setQuiz((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      quiz_questions: prev.quiz_questions?.map((qq) =>
-                        qq.id === q.id ? { ...qq, question_text: values.question_text, quiz_answers: newAnswers ?? [] } : qq
-                      ),
-                    };
+                  setQuiz({
+                    ...quiz!,
+                    quiz_questions: quiz!.quiz_questions?.map((qq) =>
+                      qq.id === q.id ? { ...qq, question_text: values.question_text, quiz_answers: newAnswers ?? [] } : qq
+                    ),
                   });
                   setEditingQuestion(null);
                 }}

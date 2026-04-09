@@ -50,9 +50,7 @@ export default function EditDeckPage({
       frontImage,
       backImage
     );
-    setDeck((prev) =>
-      prev ? { ...prev, flashcards: [...(prev.flashcards ?? []), newCard] } : prev
-    );
+    setDeck({ ...deck!, flashcards: [...(deck!.flashcards ?? []), newCard] });
     setShowAddCard(false);
   }
 
@@ -63,32 +61,21 @@ export default function EditDeckPage({
     backImage?: File | null
   ) {
     await updateFlashcard(cardId, values, frontImage, backImage);
-    setDeck((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        flashcards: prev.flashcards?.map((c) =>
-          c.id === cardId ? { ...c, ...values } : c
-        ),
-      };
+    setDeck({
+      ...deck!,
+      flashcards: deck!.flashcards?.map((c) => (c.id === cardId ? { ...c, ...values } : c)),
     });
     setEditingCard(null);
   }
 
   async function handleDeleteCard(cardId: string) {
     await deleteFlashcard(cardId);
-    setDeck((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        flashcards: prev.flashcards?.filter((c) => c.id !== cardId),
-      };
-    });
+    setDeck({ ...deck!, flashcards: deck!.flashcards?.filter((c) => c.id !== cardId) });
   }
 
   async function handleUpdateDeck(values: Record<string, unknown>) {
     await supabase.from("decks").update(values).eq("id", id);
-    setDeck((prev) => (prev ? { ...prev, ...values } : prev));
+    setDeck({ ...deck!, ...values } as typeof deck);
     setEditingDeck(false);
   }
 
