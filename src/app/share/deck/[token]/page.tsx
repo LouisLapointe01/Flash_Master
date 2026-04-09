@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Layers, ArrowRight } from "lucide-react";
+import { canReadSharedContent } from "@/lib/utils/access";
+import type { Visibility } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +32,25 @@ export default async function ShareDeckPage({
     );
   }
 
-  // If user is logged in, redirect to deck page
   const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === deck.owner_id;
+  const canRead = canReadSharedContent({
+    visibility: (deck.visibility as Visibility) ?? "private",
+    isOwner,
+    hasValidShareToken: true,
+  });
+
+  if (!canRead) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Acces indisponible</h1>
+          <p className="text-gray-500 mt-2">Ce contenu n&apos;est pas partageable via lien.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (user) {
     redirect(`/decks/${deck.id}`);
   }

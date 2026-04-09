@@ -2,16 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Save, Trash2, Upload, Shield, Layers, HelpCircle, Swords, ShieldCheck, Users, Settings, Sparkles } from "lucide-react";
 import { compressImage } from "@/lib/utils/image-compression";
 import { uploadImageWithApi } from "@/lib/utils/storage-upload";
-import type { Profile } from "@/lib/types";
+import type { Profile, RankedProfile } from "@/lib/types";
 import Link from "next/link";
 import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { getTierFromPoints } from "@/lib/utils/ranked";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -25,8 +26,12 @@ export default function SettingsPage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [generalRank, setGeneralRank] = useState<RankedProfile | null>(null);
+  const [categoryRanks, setCategoryRanks] = useState<RankedProfile[]>([]);
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const focusedView = searchParams.get("view");
 
   useEffect(() => {
     async function load() {
@@ -35,23 +40,42 @@ export default function SettingsPage() {
 
       setEmail(user.email ?? "");
 
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      const [{ data: profileData }, { data: rankedData }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single(),
+        supabase
+          .from("ranked_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("points", { ascending: false }),
+      ]);
 
-      if (data) {
-        const p = data as Profile;
+      if (profileData) {
+        const p = profileData as Profile;
         setProfile(p);
         setDisplayName(p.display_name);
         setBlockSuggestions(p.block_suggestions);
         if (p.avatar_url) setAvatarPreview(p.avatar_url);
       }
+
+      const ranks = (rankedData as RankedProfile[] | null) ?? [];
+      setGeneralRank(ranks.find((item) => item.scope_type === "general" && item.scope_key === "general") ?? null);
+      setCategoryRanks(ranks.filter((item) => item.scope_type === "category").slice(0, 4));
       setLoading(false);
     }
     load();
   }, [supabase]);
+
+  useEffect(() => {
+    if (focusedView !== "rank") return;
+    const el = document.getElementById("rank-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [focusedView]);
 
   async function handleSave() {
     setSaving(true);
@@ -113,6 +137,13 @@ export default function SettingsPage() {
 
   if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#8c7a5b]" /></div>;
 
+  const points = generalRank?.points ?? 1000;
+  const bestPoints = generalRank?.best_points ?? points;
+  const tier = getTierFromPoints(points);
+  const bestTier = getTierFromPoints(bestPoints);
+  const gamesPlayed = generalRank?.games_played ?? 0;
+  const winRate = gamesPlayed > 0 ? Math.round(((generalRank?.wins ?? 0) / gamesPlayed) * 100) : 0;
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
@@ -157,6 +188,49 @@ export default function SettingsPage() {
           {message}
         </div>
       )}
+
+      <div
+        id="rank-section"
+        className={`game-panel rounded-[1.3rem] border p-6 space-y-4 ${focusedView === "rank" ? "border-green-300 shadow-[0_0_20px_rgba(57,255,20,.22)]" : "border-[#d9cfbd]"}`}
+      >
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-[#2b303a]">
+          <Swords size={18} /> Mon rang
+        </h2>
+
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="rounded-[1rem] border border-[#d5e3ef] bg-white/85 p-3">
+            <p className="text-xs uppercase tracking-[0.08em] text-[#5f7f97]">Rang saison</p>
+            <p className="mt-1 text-lg font-black text-[#193852]">{tier.label}</p>
+          </div>
+          <div className="rounded-[1rem] border border-[#d5e3ef] bg-white/85 p-3">
+            <p className="text-xs uppercase tracking-[0.08em] text-[#5f7f97]">Elo actuel</p>
+            <p className="mt-1 text-lg font-black text-[#193852]">{points}</p>
+          </div>
+          <div className="rounded-[1rem] border border-[#d5e3ef] bg-white/85 p-3">
+            <p className="text-xs uppercase tracking-[0.08em] text-[#5f7f97]">Pic saison</p>
+            <p className="mt-1 text-lg font-black text-[#193852]">{bestPoints}</p>
+            <p className="text-[11px] text-[#6d8aa1]">{bestTier.label}</p>
+          </div>
+          <div className="rounded-[1rem] border border-[#d5e3ef] bg-white/85 p-3">
+            <p className="text-xs uppercase tracking-[0.08em] text-[#5f7f97]">Winrate</p>
+            <p className="mt-1 text-lg font-black text-[#193852]">{winRate}%</p>
+            <p className="text-[11px] text-[#6d8aa1]">{gamesPlayed} parties</p>
+          </div>
+        </div>
+
+        {categoryRanks.length > 0 ? (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#5f7f97]">Top categories</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {categoryRanks.map((item) => (
+                <span key={item.id} className="rounded-full border border-[#c9d9e8] bg-white/88 px-2.5 py-1 text-xs font-semibold text-[#4d6f87]">
+                  {item.scope_key}: {item.points}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       {/* Avatar */}
       <div className="game-panel rounded-[1.3rem] border border-[#d9cfbd] p-6 space-y-4">

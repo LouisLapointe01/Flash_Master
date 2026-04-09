@@ -35,35 +35,35 @@ export function QuizCard({ quiz, onDelete }: QuizCardProps) {
   }, []);
 
   return (
-    <div className="game-panel interactive-card group relative rounded-[1.45rem] border border-[#d9cfbd] p-5">
+    <div className="game-panel interactive-card group relative p-4">
       <div className="flex items-start justify-between">
         <Link href={`/quizzes/${quiz.id}`} className="flex-1 min-w-0">
-          <div className="cover-art cover-art-quiz mb-3">
+          <div className="cover-art cover-art-quiz mb-3 rounded-[0.95rem]">
             <div className="cover-art-meta">
               <span className="cover-art-tag">Quiz</span>
-              <FlashMasterLogo size="sm" withWordmark={false} className="rounded-[0.8rem] bg-white/72 p-1" />
+              <FlashMasterLogo size="sm" withWordmark={false} className="rounded-[0.8rem] bg-[var(--surface-strong)] p-1" />
             </div>
-            <p className="relative z-[1] mt-3 max-w-[16rem] truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#4a5d61]">
+            <p className="relative z-[1] mt-3 max-w-[16rem] truncate text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
               {categoryLabel}
             </p>
           </div>
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-[1rem] border border-[#d6d0c4] bg-white/85 p-2 text-[#5a6072]">
+            <div className="rounded-[0.8rem] border border-[var(--line)] bg-[var(--surface-soft)] p-2 text-[var(--secondary)]">
               <HelpCircle size={18} />
             </div>
-            <h3 className="truncate font-semibold text-[#2b303a]">{quiz.title}</h3>
+            <h3 className="truncate font-mono text-sm font-black uppercase tracking-[0.06em] text-[var(--foreground)]">{quiz.title}</h3>
           </div>
           {quiz.description && (
-            <p className="mb-3 line-clamp-2 text-sm text-[#676258]">{quiz.description}</p>
+            <p className="mb-3 line-clamp-2 text-sm text-[var(--text-muted)]">{quiz.description}</p>
           )}
-          <div className="flex items-center gap-3 text-xs text-[#797364]">
+          <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
             <span>{questionCount} question{questionCount !== 1 ? "s" : ""}</span>
-            <span className="max-w-[10rem] truncate rounded-full bg-[#ece9e0] px-2 py-0.5 text-[#5e5647]" title={categoryLabel}>
+            <span className="max-w-[10rem] truncate rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2 py-0.5 text-[var(--foreground)]" title={categoryLabel}>
               {categoryLabel}
             </span>
             {quiz.visibility !== "private" && (
-              <span className="rounded-full bg-[#ece9e0] px-2 py-0.5 text-[#5e5647]">
+              <span className="rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2 py-0.5 text-[var(--foreground)]">
                 {quiz.visibility === "public" ? "Public" : "Lien"}
               </span>
             )}
@@ -73,21 +73,21 @@ export function QuizCard({ quiz, onDelete }: QuizCardProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="rounded-lg p-1.5 text-[#7d7a70] hover:bg-[#f2ede4] hover:text-[#4f4a3f]"
+            className="rounded-lg border border-transparent p-1.5 text-[var(--text-muted)] transition-all duration-150 ease-in-out hover:border-[var(--line)] hover:text-[var(--foreground)]"
           >
             <MoreVertical size={16} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-8 z-10 w-40 rounded-[1rem] border border-[#d5ccbb] bg-white/96 py-1 shadow-lg">
+            <div className="absolute right-0 top-8 z-10 w-40 rounded-[1rem] border border-[var(--line)] bg-[var(--surface-strong)] py-1 shadow-lg">
               <Link
                 href={`/quizzes/${quiz.id}/play`}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#413e36] hover:bg-[#f4f0e8]"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-soft)]"
               >
                 <Play size={14} /> Jouer
               </Link>
               <Link
                 href={`/quizzes/${quiz.id}/edit`}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#413e36] hover:bg-[#f4f0e8]"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-soft)]"
               >
                 <Pencil size={14} /> Modifier
               </Link>

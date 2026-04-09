@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useDemo } from "@/lib/demo/context";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogIn, Eye, EyeOff, Play } from "lucide-react";
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const { enterDemo } = useDemo();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -50,15 +50,30 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
-      <div className="animate-float-slow pointer-events-none absolute -left-20 top-10 h-64 w-64 rounded-full bg-[#1bbfcf]/20 blur-3xl" />
-      <div className="animate-float-slow pointer-events-none absolute -right-20 bottom-6 h-64 w-64 rounded-full bg-[#0f7a83]/20 blur-3xl" />
+      <div className="animate-float-slow pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#2f86ca]/24 blur-3xl" />
+      <div className="animate-float-slow pointer-events-none absolute -right-20 bottom-6 h-72 w-72 rounded-full bg-[#f0b548]/24 blur-3xl" />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.22]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(50,96,158,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(50,96,158,.14) 1px, transparent 1px)",
+          backgroundSize: "36px 36px",
+        }}
+      />
 
       <div className="game-panel animate-in-up relative w-full max-w-xl rounded-[2.05rem] border border-[#c6d8e8] p-8 sm:p-10">
-        <div className="mb-8 text-center">
-          <FlashMasterLogo size="lg" className="mx-auto justify-center" />
-          <p className="mt-4 text-sm text-[#466983]">
-            Acces securise a ton espace d&apos;apprentissage.
-          </p>
+        <div className="mb-7">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <FlashMasterLogo size="lg" />
+            <span className="hud-chip">Acces joueur</span>
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-[#1c3452] sm:text-3xl">Entre dans l&apos;arene d&apos;apprentissage</h1>
+          <p className="mt-2 text-sm text-[#496682]">Connecte-toi pour reprendre ta progression, tes runs et tes modes classes.</p>
+          <div className="mt-4 grid grid-cols-3 gap-2 text-[11px]">
+            <p className="rounded-full border border-[#c7daec] bg-white/84 px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[#4f6c89]">Decks</p>
+            <p className="rounded-full border border-[#c7daec] bg-white/84 px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[#4f6c89]">Quiz</p>
+            <p className="rounded-full border border-[#c7daec] bg-white/84 px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[#4f6c89]">Classe</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">

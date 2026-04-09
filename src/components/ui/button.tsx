@@ -12,16 +12,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={clsx(
-          "inline-flex items-center justify-center gap-2 rounded-[1rem] font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50",
-          "active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#3d5f8f]/18",
+          "inline-flex cursor-crosshair items-center justify-center gap-2 rounded-[0.85rem] border-2 font-semibold uppercase tracking-[0.08em] transition-all duration-150 ease-in-out disabled:pointer-events-none disabled:opacity-50",
+          "hover:scale-105 active:translate-y-1 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-400/25",
           {
-            "bg-[linear-gradient(140deg,#2f4868,#3d5f8f)] text-[#fffaf1] shadow-[0_18px_36px_-24px_rgba(38,53,73,.88)] hover:-translate-y-[1px] hover:brightness-110":
+            "border-green-400 bg-[linear-gradient(140deg,#12240e,#09110a)] text-green-300 shadow-[0_0_16px_rgba(57,255,20,.34)] hover:border-green-300 hover:text-green-200 hover:shadow-[0_0_22px_rgba(57,255,20,.52)]":
               variant === "primary",
-            "border border-[#d8ccba] bg-[#fffdf8] text-[#3a3833] shadow-[0_10px_24px_-18px_rgba(42,34,21,.42)] hover:-translate-y-[1px] hover:border-[#bcae95] hover:bg-white":
+            "border-cyan-400 bg-[linear-gradient(140deg,#081620,#071019)] text-cyan-300 shadow-[0_0_14px_rgba(0,255,255,.26)] hover:border-cyan-300 hover:text-cyan-200 hover:shadow-[0_0_20px_rgba(0,255,255,.46)]":
               variant === "secondary",
-            "bg-[linear-gradient(135deg,#b65252,#93403f)] text-white shadow-[0_16px_32px_-20px_rgba(122,49,49,.72)] hover:-translate-y-[1px] hover:brightness-110":
+            "border-red-500 bg-[linear-gradient(135deg,#290a15,#1a050d)] text-red-300 shadow-[0_0_14px_rgba(255,0,63,.32)] hover:border-red-400 hover:text-red-200 hover:shadow-[0_0_20px_rgba(255,0,63,.5)]":
               variant === "danger",
-            "text-[#514e46] hover:bg-[#efe7db] hover:text-[#2f2b25]": variant === "ghost",
+            "border-zinc-700 bg-black/45 text-zinc-300 hover:border-cyan-400/60 hover:text-cyan-300": variant === "ghost",
           },
           {
             "px-3.5 py-2 text-xs": size === "sm",

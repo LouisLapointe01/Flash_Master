@@ -5,27 +5,21 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  Layers,
-  HelpCircle,
-  BarChart3,
-  Compass,
-  MessageSquare,
-  ShieldCheck,
-  Swords,
-  Users,
-} from "lucide-react";
+  HudDeckIcon,
+  HudHomeIcon,
+  HudQuizIcon,
+  HudRankedIcon,
+  HudShieldIcon,
+  HudTrainingIcon,
+} from "./hud-icons";
 
 const navItems = [
-  { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
-  { href: "/decks", label: "Decks", icon: Layers },
-  { href: "/quizzes", label: "Quiz", icon: HelpCircle },
-  { href: "/ranked", label: "Classe", icon: Swords },
-  { href: "/check", label: "Check", icon: ShieldCheck },
-  { href: "/social", label: "Social", icon: Users },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/explore", label: "Explorer", icon: Compass },
-  { href: "/suggestions", label: "Suggestions", icon: MessageSquare },
+  { href: "/dashboard", label: "Lobby", icon: HudHomeIcon, slot: "01" },
+  { href: "/ranked", label: "Ranked", icon: HudRankedIcon, slot: "02" },
+  { href: "/training", label: "Training", icon: HudTrainingIcon, slot: "03" },
+  { href: "/quizzes", label: "Mes quiz", icon: HudQuizIcon, slot: "04" },
+  { href: "/decks", label: "Mes decks", icon: HudDeckIcon, slot: "05" },
+  { href: "/check", label: "Soumettre", icon: HudShieldIcon, slot: "06" },
 ];
 
 function isItemActive(pathname: string, href: string) {
@@ -61,8 +55,10 @@ export function BottomDockNav() {
                 animate={active ? { y: [0, -1, 0] } : { y: 0 }}
                 transition={{ duration: 0.3 }}
               >
+                {active && <span className="dock-nav-kbd">{item.slot}</span>}
                 <item.icon size={18} className="shrink-0" />
                 <span className="dock-nav-label">{item.label}</span>
+                <span className="dock-tooltip">{item.label}</span>
               </motion.span>
             </Link>
           );

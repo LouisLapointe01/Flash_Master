@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { HelpCircle, ArrowRight } from "lucide-react";
+import { canReadSharedContent } from "@/lib/utils/access";
+import type { Visibility } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,24 @@ export default async function ShareQuizPage({
   }
 
   const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === quiz.owner_id;
+  const canRead = canReadSharedContent({
+    visibility: (quiz.visibility as Visibility) ?? "private",
+    isOwner,
+    hasValidShareToken: true,
+  });
+
+  if (!canRead) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Acces indisponible</h1>
+          <p className="text-gray-500 mt-2">Ce contenu n&apos;est pas partageable via lien.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (user) {
     redirect(`/quizzes/${quiz.id}`);
   }

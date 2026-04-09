@@ -46,6 +46,7 @@ function makeDeck(id: string, cardCount: number): Deck & { flashcards: Flashcard
 const deckSmall = makeDeck("small", 5);
 const deckMedium = makeDeck("medium", 50);
 const deckLarge = makeDeck("large", 200);
+const deckXLarge = makeDeck("xlarge", 1000);
 
 // Versions modifiées : 20% des cartes modifiées, 10% supprimées, 10% ajoutées
 function makeModifiedDeck(original: Deck & { flashcards: Flashcard[] }) {
@@ -71,6 +72,7 @@ function makeModifiedDeck(original: Deck & { flashcards: Flashcard[] }) {
 const deckSmallModified = makeModifiedDeck(deckSmall);
 const deckMediumModified = makeModifiedDeck(deckMedium);
 const deckLargeModified = makeModifiedDeck(deckLarge);
+const deckXLargeModified = makeModifiedDeck(deckXLarge);
 
 // ─── Benchmarks diff ──────────────────────────────────────────────────────────
 
@@ -86,6 +88,10 @@ describe("Diff — deck identique (sans changement)", () => {
   bench("grand deck (200 cartes) — aucun changement", () => {
     computeDeckDiff(deckLarge, deckLarge);
   });
+
+  bench("deck xlarge (1000 cartes) — aucun changement", () => {
+    computeDeckDiff(deckXLarge, deckXLarge);
+  });
 });
 
 describe("Diff — deck avec modifications réalistes (20% mod, 10% sup, 10% ajout)", () => {
@@ -99,6 +105,10 @@ describe("Diff — deck avec modifications réalistes (20% mod, 10% sup, 10% ajo
 
   bench("grand deck (200 cartes) — modifications réalistes", () => {
     computeDeckDiff(deckLarge, deckLargeModified);
+  });
+
+  bench("deck xlarge (1000 cartes) — modifications réalistes", () => {
+    computeDeckDiff(deckXLarge, deckXLargeModified);
   });
 });
 

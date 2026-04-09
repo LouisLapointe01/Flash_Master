@@ -6,6 +6,9 @@ export type RankedTier = {
   minPoints: number;
 };
 
+export const TARGET_MATCH_DURATION_SECONDS = 15 * 60;
+export const DEFAULT_LOBBY_MAX_PLAYERS = 30;
+
 export const RANKED_TIERS: RankedTier[] = [
   { key: "rookie", label: "Rookie", minPoints: 0 },
   { key: "bronze", label: "Bronze", minPoints: 800 },
@@ -16,6 +19,14 @@ export const RANKED_TIERS: RankedTier[] = [
   { key: "master", label: "Master", minPoints: 2850 },
   { key: "grandmaster", label: "Grandmaster", minPoints: 3500 },
 ];
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function getTierIndex(tierKey: string) {
+  return RANKED_TIERS.findIndex((item) => item.key === tierKey);
+}
 
 export function getTierFromPoints(points: number) {
   let tier = RANKED_TIERS[0];
@@ -29,7 +40,7 @@ export function getTierFromPoints(points: number) {
 
 export function getNextTier(points: number) {
   const current = getTierFromPoints(points);
-  const currentIndex = RANKED_TIERS.findIndex((item) => item.key === current.key);
+  const currentIndex = getTierIndex(current.key);
   if (currentIndex < 0 || currentIndex >= RANKED_TIERS.length - 1) return null;
   return RANKED_TIERS[currentIndex + 1];
 }
@@ -44,6 +55,23 @@ export function getTierProgress(points: number) {
   return Math.max(0, Math.min(1, (points - current.minPoints) / total));
 }
 
+export function getAllowedOpponentTierKeys(tierKey: string) {
+  const index = getTierIndex(tierKey);
+  if (index < 0) return [tierKey];
+
+  const keys = [tierKey];
+  if (index > 0) keys.push(RANKED_TIERS[index - 1].key);
+  if (index < RANKED_TIERS.length - 1) keys.push(RANKED_TIERS[index + 1].key);
+  return keys;
+}
+
+export function areTiersCompatible(pointsA: number, pointsB: number) {
+  const tierA = getTierFromPoints(pointsA);
+  const tierB = getTierFromPoints(pointsB);
+  const allowed = getAllowedOpponentTierKeys(tierA.key);
+  return allowed.includes(tierB.key);
+}
+
 export function normalizeCategoryScope(path: string[] | null | undefined, fallbackCategory?: string | null) {
   if (path && path.length > 0) {
     return path.map((item) => item.trim()).filter(Boolean).join(" > ");
@@ -52,27 +80,102 @@ export function normalizeCategoryScope(path: string[] | null | undefined, fallba
   return "General";
 }
 
+export function computeRankedDeltaFromScore(params: {
+  currentPoints: number;
+  correctAnswers: number;
+  totalQuestions: number;
+  opponentPoints?: number;
+  durationSeconds?: number;
+  pauseCount?: number;
+  wonMatch?: boolean;
+}) {
+  const {
+    currentPoints,
+    correctAnswers,
+    totalQuestions,
+    opponentPoints = currentPoints,
+    durationSeconds,
+    pauseCount = 0,
+    wonMatch,
+  } = params;
+
+  const safeTotal = Math.max(1, totalQuestions);
+  const safeCorrect = clamp(correctAnswers, 0, safeTotal);
+  const wrongAnswers = safeTotal - safeCorrect;
+  const accuracy = safeCorrect / safeTotal;
+
+  const expectedScore = 1 / (1 + 10 ** ((opponentPoints - currentPoints) / 400));
+  const rawActualScore = wonMatch === undefined
+    ? accuracy
+    : wonMatch
+      ? Math.max(0.6, accuracy)
+      : Math.min(0.4, accuracy);
+  const actualScore = clamp(rawActualScore, 0, 1);
+
+  const tier = getTierFromPoints(currentPoints);
+  const tierIndex = Math.max(0, getTierIndex(tier.key));
+  const kFactor = Math.max(26, 52 - tierIndex * 3);
+  const eloDelta = Math.round(kFactor * (actualScore - expectedScore));
+
+  const accuracyBonus = accuracy >= 0.7
+    ? Math.round((accuracy - 0.7) * 28)
+    : 0;
+
+  let paceAdjustment = 0;
+  if (durationSeconds && durationSeconds > 0) {
+    const durationRatio = durationSeconds / TARGET_MATCH_DURATION_SECONDS;
+    if (durationRatio >= 0.8 && durationRatio <= 1.25) {
+      paceAdjustment += 4;
+    } else if (durationRatio < 0.5) {
+      paceAdjustment -= 6;
+    } else if (durationRatio > 1.6) {
+      paceAdjustment -= 4;
+    }
+  }
+
+  const pausePenalty = Math.max(0, pauseCount - 1) * 2;
+  const rawDelta = eloDelta + accuracyBonus + paceAdjustment - pausePenalty;
+  const delta = clamp(Math.round(rawDelta), -95, 95);
+  const nextPoints = Math.max(0, currentPoints + delta);
+
+  return {
+    wrongAnswers,
+    accuracy,
+    expectedScore,
+    actualScore,
+    kFactor,
+    accuracyBonus,
+    paceAdjustment,
+    pausePenalty,
+    delta,
+    nextPoints,
+  };
+}
+
 export function computeRankedDelta(params: {
   currentPoints: number;
   correctAnswers: number;
   totalQuestions: number;
 }) {
-  const { currentPoints, correctAnswers, totalQuestions } = params;
-  const wrongAnswers = Math.max(0, totalQuestions - correctAnswers);
+  const result = computeRankedDeltaFromScore({
+    currentPoints: params.currentPoints,
+    correctAnswers: params.correctAnswers,
+    totalQuestions: params.totalQuestions,
+  });
 
-  const gainPerCorrect = Math.max(4, Math.round(16 - (currentPoints - 1000) / 320));
-  const lossPerWrong = Math.max(10, Math.round(10 + (currentPoints - 1000) / 240));
-  const rawDelta = correctAnswers * gainPerCorrect - wrongAnswers * lossPerWrong;
-
-  const clampedDelta = Math.max(-95, Math.min(85, rawDelta));
-  const nextPoints = Math.max(0, currentPoints + clampedDelta);
+  const gainPerCorrect = params.correctAnswers > 0
+    ? Math.max(1, Math.round(Math.max(0, result.delta) / params.correctAnswers))
+    : 0;
+  const lossPerWrong = result.wrongAnswers > 0
+    ? Math.max(1, Math.round(Math.max(0, -result.delta) / result.wrongAnswers))
+    : 0;
 
   return {
-    wrongAnswers,
+    wrongAnswers: result.wrongAnswers,
     gainPerCorrect,
     lossPerWrong,
-    delta: clampedDelta,
-    nextPoints,
+    delta: result.delta,
+    nextPoints: result.nextPoints,
   };
 }
 

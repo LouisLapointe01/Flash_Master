@@ -48,6 +48,13 @@ describe("SM-2 — traitement en lot", () => {
     reviewCount: i % 50,
   }));
 
+  const cards10000 = Array.from({ length: 10000 }, (_, i) => ({
+    quality: (i % 6) as 0 | 1 | 2 | 3 | 4 | 5,
+    easeFactor: 1.3 + (i % 20) * 0.06,
+    intervalDays: 1 + (i % 180),
+    reviewCount: i % 80,
+  }));
+
   bench("100 cartes — session d'étude complète", () => {
     for (const card of cards100) calculateSM2(card);
   });
@@ -56,10 +63,27 @@ describe("SM-2 — traitement en lot", () => {
     for (const card of cards1000) calculateSM2(card);
   });
 
+  bench("10 000 cartes — session extrême", () => {
+    for (const card of cards10000) calculateSM2(card);
+  });
+
   bench("simulation d'une progression complète (50 révisions, même carte)", () => {
     let state = { easeFactor: 2.5, intervalDays: 1, reviewCount: 0 };
     for (let i = 0; i < 50; i++) {
       const quality = i % 2 === 0 ? 4 : 5;
+      const result = calculateSM2({ quality, ...state });
+      state = {
+        easeFactor: result.easeFactor,
+        intervalDays: result.intervalDays,
+        reviewCount: state.reviewCount + 1,
+      };
+    }
+  });
+
+  bench("simulation annuelle (365 révisions, même carte)", () => {
+    let state = { easeFactor: 2.5, intervalDays: 1, reviewCount: 0 };
+    for (let i = 0; i < 365; i++) {
+      const quality = i % 7 === 0 ? 3 : i % 5 === 0 ? 4 : 5;
       const result = calculateSM2({ quality, ...state });
       state = {
         easeFactor: result.easeFactor,

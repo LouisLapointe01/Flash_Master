@@ -288,8 +288,11 @@ Ce script injecte des decks/quizzes generiques multi-categories pour enrichir le
 | `npm run build` | Build production Next.js |
 | `npm run start` | Lancer le build de prod |
 | `npm run lint` | Lint ESLint |
+| `npm run test` | Tests unitaires (execution unique) |
+| `npm run test:watch` | Tests unitaires en mode watch |
 | `npm run bench` | Benchmarks de performance en mode watch |
 | `npm run bench:run` | Benchmarks de performance (execution unique) |
+| `npm run quality:full` | Suite complete: tests + benchmarks |
 | `node verify_supabase_setup.js` | Verifier env + DB + buckets |
 | `node seed_content.js` | Injecter du contenu seed |
 
@@ -358,18 +361,26 @@ Notes:
 
 ### Algorithmes critiques
 
-Les 3 algorithmes metiers ont ete benchmarkes avec Vitest:
+Les algorithmes metiers critiques sont benchmarkes avec Vitest:
 
 | Algorithme | Performance cle |
 |---|---|
 | SM-2 (spaced repetition) | ~3M ops/s par carte, ~40K ops/s pour 100 cartes |
 | Ranked (tiers, delta RP) | ~15-21M ops/s — negligeable en temps CPU |
 | Diff deck/quiz | ~900K ops/s (5 cartes) → ~25K ops/s (200 cartes) — lineaire O(n) |
+| Matchmaking ranked | tri + scoring de candidats sur files 100/1k/5k |
+| Training scopes | aggregation hierarchique des categories sur gros volumes |
 
 Lancer les benchmarks:
 
 ```bash
 npm run bench:run
+```
+
+Lancer la suite complete tests + efficacite:
+
+```bash
+npm run quality:full
 ```
 
 ### Optimisations reseau

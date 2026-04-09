@@ -2,62 +2,74 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Bell, Settings, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
+import { ArrowLeft, Moon, SunMedium, Trophy } from "lucide-react";
+import { HudBellIcon, HudCogIcon, HudExitIcon } from "./hud-icons";
+import { getTierFromPoints } from "@/lib/utils/ranked";
 
 interface TopbarProps {
   displayName: string;
 }
 
+type ThemeMode = "dark" | "light";
+type RankHudSummary = {
+  points: number;
+  bestPoints: number;
+  tierLabel: string;
+};
+
 function getPageContext(pathname: string) {
   if (pathname.startsWith("/dashboard")) {
-    return { title: "Tableau de bord", subtitle: "Vision globale et actions rapides" };
+    return { title: "Lobby principal", subtitle: "Missions, progression et modes de jeu" };
   }
   if (pathname.startsWith("/decks") && pathname.includes("/study")) {
-    return { title: "Mode etude", subtitle: "Concentration maximale, une carte a la fois" };
+    return { title: "Run d'etude", subtitle: "Focus total, une carte apres l'autre" };
   }
   if (pathname.startsWith("/decks") && pathname.includes("/edit")) {
-    return { title: "Edition deck", subtitle: "Structure et qualite pedagogique" };
+    return { title: "Forge de deck", subtitle: "Structure, difficulte et clarté" };
   }
   if (pathname.startsWith("/decks")) {
-    return { title: "Decks", subtitle: "Collections memorisables" };
+    return { title: "Arsenal decks", subtitle: "Collections memorisables pretes au combat" };
   }
   if (pathname.startsWith("/quizzes") && pathname.includes("/play")) {
-    return { title: "Session quiz", subtitle: "Evaluation sans biais visuel" };
+    return { title: "Arena quiz", subtitle: "Round chronometre et reflexes en direct" };
   }
   if (pathname.startsWith("/quizzes") && pathname.includes("/edit")) {
-    return { title: "Edition quiz", subtitle: "Questions, rythme, progression" };
+    return { title: "Forge quiz", subtitle: "Questions, rythme et paliers de score" };
   }
   if (pathname.startsWith("/quizzes")) {
-    return { title: "Quizzes", subtitle: "Parcours de verification" };
+    return { title: "Modes quiz", subtitle: "Parcours de verification competitifs" };
   }
   if (pathname.startsWith("/ranked")) {
-    return { title: "Mode classe", subtitle: "Progression competitive par paliers" };
+    return { title: "Mode classe", subtitle: "Montee de ligue et paliers de rang" };
+  }
+  if (pathname.startsWith("/training")) {
+    return { title: "Entrainement", subtitle: "Global, categorie, sous-categorie avec compteurs" };
   }
   if (pathname.startsWith("/check")) {
-    return { title: "Check communaute", subtitle: "Validation des questions avant integration" };
+    return { title: "Soumettre question", subtitle: "Revision communautaire avant publication" };
   }
   if (pathname.startsWith("/social")) {
-    return { title: "Social", subtitle: "Amis, associations et parties privees" };
+    return { title: "Social", subtitle: "Escouades, amis et duels prives" };
   }
   if (pathname.startsWith("/stats")) {
-    return { title: "Statistiques", subtitle: "Suivi intelligent des performances" };
+    return { title: "Statistiques", subtitle: "Courbes de progression et serie active" };
   }
   if (pathname.startsWith("/explore")) {
-    return { title: "Explorer", subtitle: "Decouvertes de la communaute" };
+    return { title: "Explorer", subtitle: "Decouvertes et tendances de la communaute" };
   }
   if (pathname.startsWith("/suggestions")) {
-    return { title: "Suggestions", subtitle: "Collaboration et ameliorations" };
+    return { title: "Suggestions", subtitle: "Idees de features et collaboration" };
   }
   if (pathname.startsWith("/notifications")) {
-    return { title: "Notifications", subtitle: "Activite recente et alertes" };
+    return { title: "Notifications", subtitle: "Alertes live et activite recente" };
   }
   if (pathname.startsWith("/settings")) {
-    return { title: "Parametres", subtitle: "Profil, preferences et securite" };
+    return { title: "Parametres", subtitle: "Profil joueur, preferences et securite" };
   }
-  return { title: "Flash Master", subtitle: "Navigation intelligente" };
+  return { title: "Flash Master", subtitle: "Navigation tactique" };
 }
 
 export function Topbar({ displayName }: TopbarProps) {
@@ -65,33 +77,92 @@ export function Topbar({ displayName }: TopbarProps) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [rankHud, setRankHud] = useState<RankHudSummary | null>(null);
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof document === "undefined") return "dark";
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  });
   const page = getPageContext(pathname);
+  const showBackToDashboard = pathname !== "/dashboard";
 
   useEffect(() => {
-    async function fetchUnread() {
-      const { count } = await supabase
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("read", false);
-      setUnreadCount(count ?? 0);
-    }
-    fetchUnread();
+    let active = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase
-      .channel("notifications")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications" },
-        () => {
-          setUnreadCount((c) => c + 1);
-        }
-      )
-      .subscribe();
+    async function bootstrapHeaderData() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!active) return;
+
+      if (!user) {
+        setUnreadCount(0);
+        setRankHud(null);
+        return;
+      }
+
+      const [{ count }, { data: generalRank }] = await Promise.all([
+        supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("read", false)
+          .eq("user_id", user.id),
+        supabase
+          .from("ranked_profiles")
+          .select("points, best_points")
+          .eq("user_id", user.id)
+          .eq("scope_type", "general")
+          .eq("scope_key", "general")
+          .maybeSingle(),
+      ]);
+
+      if (!active) return;
+
+      const points = (generalRank as { points: number; best_points: number } | null)?.points ?? 1000;
+      const bestPoints = (generalRank as { points: number; best_points: number } | null)?.best_points ?? points;
+      const tierLabel = getTierFromPoints(points).label;
+
+      setUnreadCount(count ?? 0);
+      setRankHud({ points, bestPoints, tierLabel });
+
+      channel = supabase
+        .channel(`notifications-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            setUnreadCount((c) => c + 1);
+          }
+        )
+        .subscribe();
+    }
+
+    void bootstrapHeaderData();
 
     return () => {
-      supabase.removeChannel(channel);
+      active = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [supabase]);
+
+  function toggleTheme() {
+    const nextTheme: ThemeMode = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    try {
+      localStorage.setItem("flash-theme", nextTheme);
+    } catch {
+      // noop
+    }
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -100,35 +171,51 @@ export function Topbar({ displayName }: TopbarProps) {
   }
 
   return (
-    <header className="game-panel animate-in-up relative z-20 mx-3 mt-3 flex min-h-16 items-center justify-between gap-3 rounded-[1.35rem] border border-[#dbd2c4] px-4 py-3 lg:mx-6 lg:px-6">
+    <header
+      className="topbar-shell animate-in-up relative z-20 mx-3 mt-3 flex min-h-16 items-center justify-between gap-3 px-4 py-3 lg:mx-6 lg:px-6"
+      aria-label={`Session ${displayName}`}
+    >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="hidden rounded-[1rem] border border-[#ddd2be] bg-white/88 p-2.5 lg:block">
+        <Link href="/dashboard" className="topbar-pill hidden p-2 md:block" title="Retour au dashboard">
           <FlashMasterLogo size="sm" withWordmark={false} />
-        </div>
+        </Link>
+        {showBackToDashboard ? (
+          <Link href="/dashboard" className="topbar-action p-2" title="Retour au dashboard">
+            <ArrowLeft size={18} />
+          </Link>
+        ) : null}
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold tracking-[0.01em] text-[#252b34] lg:text-base">{page.title}</p>
-          <p className="truncate text-xs text-[#6b675f]">{page.subtitle}</p>
+          <p className="neon-title truncate font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)] lg:text-base">{page.title}</p>
+          <p className="truncate text-[11px] uppercase tracking-[0.08em] text-[var(--text-muted)]">{page.subtitle}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="hidden items-center gap-2 rounded-full border border-[#d8cdb8] bg-white/88 px-2.5 py-1.5 text-xs font-semibold text-[#4f4738] sm:inline-flex">
-          <Sparkles size={12} className="text-[#8f6d2f]" />
-          {displayName}
-        </div>
+        <Link
+          href="/settings?view=rank"
+          className="topbar-pill inline-flex items-center gap-2 px-3 py-1.5 font-mono text-[11px] font-black uppercase tracking-[0.08em] text-[var(--foreground)]"
+          title="Mon rang"
+        >
+          <Trophy size={12} className="text-[var(--primary)]" />
+          <span>{rankHud ? `${rankHud.tierLabel} · ${rankHud.points} Elo` : "Rookie · 1000 Elo"}</span>
+        </Link>
 
-        <div className="hidden min-w-[220px] items-center rounded-full border border-[#dfd5c4] bg-white/86 px-3 py-1.5 text-xs text-[#756e60] lg:inline-flex">
-          Command center
-        </div>
+        <button
+          onClick={toggleTheme}
+          className="topbar-action p-2"
+          title={theme === "dark" ? "Passer en theme clair" : "Passer en theme sombre"}
+        >
+          {theme === "dark" ? <SunMedium size={18} /> : <Moon size={18} />}
+        </button>
 
         <Link
           href="/notifications"
-          className="relative rounded-[0.95rem] border border-[#d8cdb8] bg-white/86 p-2 text-[#675f52] transition hover:border-[#b8ab95] hover:text-[#3f3a31]"
+          className="topbar-action relative p-2"
           title="Notifications"
         >
-          <Bell size={20} />
+          <HudBellIcon size={18} />
           {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#de5d5d] text-xs text-white">
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border border-red-500 bg-red-600 text-[10px] font-black text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -136,18 +223,18 @@ export function Topbar({ displayName }: TopbarProps) {
 
         <Link
           href="/settings"
-          className="rounded-[0.95rem] border border-[#d8cdb8] bg-white/86 p-2 text-[#675f52] transition hover:border-[#b8ab95] hover:text-[#3f3a31]"
+          className="topbar-action p-2"
           title="Parametres"
         >
-          <Settings size={18} />
+          <HudCogIcon size={18} />
         </Link>
 
         <button
           onClick={handleLogout}
-          className="rounded-[0.95rem] border border-[#d8cdb8] bg-white/86 p-2 text-[#675f52] transition hover:border-[#d18c8c] hover:text-[#9f3c3c]"
-          title="Déconnexion"
+          className="topbar-action p-2"
+          title="Deconnexion"
         >
-          <LogOut size={18} />
+          <HudExitIcon size={18} />
         </button>
       </div>
     </header>

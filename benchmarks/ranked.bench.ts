@@ -109,4 +109,21 @@ describe("Ranked — simulation de saison complète", () => {
       getTierProgress(points);
     }
   });
+
+  bench("5 000 parties consécutives (charge longue)", () => {
+    let points = 1200;
+    for (let i = 0; i < 5000; i++) {
+      const correct = i % 11;
+      const totalQuestions = 10 + (i % 3);
+      const result = computeRankedDelta({
+        currentPoints: points,
+        correctAnswers: correct,
+        totalQuestions,
+      });
+      points = result.nextPoints;
+      getTierFromPoints(points);
+      getNextTier(points);
+      getTierProgress(points);
+    }
+  });
 });

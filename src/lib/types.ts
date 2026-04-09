@@ -3,6 +3,9 @@ export type SuggestionStatus = "pending" | "accepted" | "rejected";
 export type RankedScopeType = "general" | "category";
 export type ChallengeMode = "ranked" | "training";
 export type ChallengeStatus = "pending" | "accepted" | "completed" | "cancelled";
+export type LobbyMode = "ranked" | "training";
+export type LobbyStatus = "forming" | "countdown" | "in_progress" | "paused" | "finished" | "cancelled";
+export type MatchmakingStatus = "searching" | "matched" | "cancelled";
 export type FriendshipStatus = "pending" | "accepted" | "rejected";
 export type ReviewAction = "like" | "dislike" | "modify";
 export type ReviewQueueStatus = "pending" | "approved" | "rejected";
@@ -182,6 +185,55 @@ export interface RankedMatchResult {
   correct_answers: number;
   total_questions: number;
   created_at: string;
+}
+
+export interface RankedMatchQueueEntry {
+  id: string;
+  user_id: string;
+  scope_type: RankedScopeType;
+  scope_key: string;
+  points_snapshot: number;
+  tier_key: string;
+  status: MatchmakingStatus;
+  created_at: string;
+  updated_at: string;
+  matched_lobby_id: string | null;
+}
+
+export interface GameLobby {
+  id: string;
+  mode: LobbyMode;
+  status: LobbyStatus;
+  scope_type: RankedScopeType;
+  scope_key: string;
+  max_players: number;
+  target_duration_seconds: number;
+  pause_budget_seconds: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  started_at: string | null;
+  ended_at: string | null;
+}
+
+export interface GameLobbyPlayer {
+  id: string;
+  lobby_id: string;
+  user_id: string;
+  points_snapshot: number;
+  tier_key: string;
+  is_ready: boolean;
+  joined_at: string;
+}
+
+export interface LobbyPauseEvent {
+  id: string;
+  lobby_id: string;
+  requested_by: string;
+  reason: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_seconds: number;
 }
 
 export interface Friendship {

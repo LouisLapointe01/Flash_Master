@@ -3,12 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Bell, Check, CheckCheck, Trash2, Layers, HelpCircle, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Notification } from "@/lib/types";
-import Link from "next/link";
-import { CapyNotif } from "@/components/illustrations/capi-illustrations";
+import { HeroSignalVisual } from "@/components/branding/hero-signal-visual";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -58,7 +57,7 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#8c7a5b]" /></div>;
+  if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-cyan-400" /></div>;
 
   return (
     <div className="space-y-6">
@@ -77,17 +76,13 @@ export default function NotificationsPage() {
             ) : null}
           </div>
 
-          <div className="section-hero-visual">
-            <div className="cover-art-meta">
-              <span className="cover-art-tag">Live feed</span>
-              <span className="cover-art-chip">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="relative z-[1] mt-2 flex items-end justify-center">
-              <CapyNotif className="h-36 drop-shadow-sm" />
-            </div>
-          </div>
+          <HeroSignalVisual
+            tag="Live feed"
+            title="Alertes en temps reel"
+            icon={Bell}
+            accent="violet"
+            chips={[`${unreadCount} non lues`, `${notifications.length} total`]}
+          />
         </div>
       </div>
 

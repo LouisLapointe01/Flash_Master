@@ -4,9 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { format, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { BarChart3, BookOpen, HelpCircle, Target, Clock, TrendingUp, Layers, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { CapyStats } from "@/components/illustrations/capi-illustrations";
+import { BarChart3, BookOpen, HelpCircle, Target, Clock, TrendingUp } from "lucide-react";
+import { HeroSignalVisual } from "@/components/branding/hero-signal-visual";
 
 interface StatsData {
   totalDecks: number;
@@ -89,7 +88,7 @@ export default function StatsPage() {
     load();
   }, [supabase]);
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#8c7a5b]" /></div>;
+  if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-cyan-400" /></div>;
 
   if (!data) return null;
 
@@ -104,17 +103,17 @@ export default function StatsPage() {
             <h1 className="page-title mt-2">Statistiques</h1>
           </div>
 
-          <div className="section-hero-visual">
-            <div className="cover-art-meta">
-              <span className="cover-art-tag">Activity stream</span>
-              <span className="cover-art-chip">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="relative z-[1] mt-2 flex items-end justify-center">
-              <CapyStats className="h-36 drop-shadow-sm" />
-            </div>
-          </div>
+          <HeroSignalVisual
+            tag="Activity stream"
+            title="KPIs et sessions live"
+            icon={TrendingUp}
+            accent="cyan"
+            chips={[
+              `${data.totalStudySessions} sessions`,
+              `${data.totalQuizSessions} quiz`,
+              `${data.avgAccuracy}% precision`,
+            ]}
+          />
         </div>
       </div>
 

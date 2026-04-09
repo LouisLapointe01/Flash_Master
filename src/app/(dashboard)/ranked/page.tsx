@@ -1,17 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { clsx } from "clsx";
-import { Flame, Medal, Swords, Target, Trophy, Layers, HelpCircle, ShieldCheck, Users, Sparkles } from "lucide-react";
-import type { RankedProfile } from "@/lib/types";
-import { CapyRanked } from "@/components/illustrations/capi-illustrations";
+import { Flame, Loader2, Medal, Swords, Target, Trophy } from "lucide-react";
 import {
-  getNextTier,
-  getTierFromPoints,
-  getTierProgress,
+  DEFAULT_LOBBY_MAX_PLAYERS,
+  TARGET_MATCH_DURATION_SECONDS,
   normalizeCategoryScope,
 } from "@/lib/utils/ranked";
 
@@ -26,6 +23,24 @@ type QuizWithCount = {
   profiles?: Array<{ display_name: string }>;
 };
 
+type QueueRow = {
+  id: string;
+  status: "searching" | "matched" | "cancelled";
+  matched_lobby_id: string | null;
+  scope_type: "general" | "category";
+  scope_key: string;
+  created_at: string;
+};
+
+type QueueRpcResponse = {
+  status?: "searching" | "matched";
+  queue_id?: string;
+  lobby_id?: string;
+  opponent_user_id?: string;
+  scope_type?: "general" | "category";
+  scope_key?: string;
+};
+
 function getQuestionCount(quiz: QuizWithCount) {
   if (!Array.isArray(quiz.quiz_questions) || quiz.quiz_questions.length === 0) return 0;
   const first = quiz.quiz_questions[0] as { count?: number };
@@ -35,9 +50,71 @@ function getQuestionCount(quiz: QuizWithCount) {
 export default function RankedPage() {
   const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState(true);
+  const [busyMatchmaking, setBusyMatchmaking] = useState(false);
+  const [syncingQueue, setSyncingQueue] = useState(false);
   const [quizzes, setQuizzes] = useState<QuizWithCount[]>([]);
-  const [profiles, setProfiles] = useState<RankedProfile[]>([]);
+  const [myUserId, setMyUserId] = useState<string | null>(null);
   const [scopeFilter, setScopeFilter] = useState<string>("all");
+  const [queueStatus, setQueueStatus] = useState<"idle" | "searching" | "matched">("idle");
+  const [queueLobbyId, setQueueLobbyId] = useState<string | null>(null);
+  const [queueScopeLabel, setQueueScopeLabel] = useState("general");
+  const [queueMessage, setQueueMessage] = useState("");
+
+  const applyQueueState = useCallback((activeQueue: QueueRow | null) => {
+    if (activeQueue?.status === "matched") {
+      setQueueStatus("matched");
+      setQueueLobbyId(activeQueue.matched_lobby_id ?? null);
+      setQueueScopeLabel(activeQueue.scope_key);
+      return;
+    }
+
+    if (activeQueue?.status === "searching") {
+      setQueueStatus("searching");
+      setQueueLobbyId(null);
+      setQueueScopeLabel(activeQueue.scope_key);
+      return;
+    }
+
+    setQueueStatus("idle");
+    setQueueLobbyId(null);
+    setQueueScopeLabel("general");
+  }, []);
+
+  const syncQueueState = useCallback(
+    async (userId: string, options?: { quiet?: boolean }) => {
+      if (!options?.quiet) {
+        setSyncingQueue(true);
+      }
+
+      const { data, error } = await supabase
+        .from("ranked_match_queue")
+        .select("id, status, matched_lobby_id, scope_type, scope_key, created_at")
+        .eq("user_id", userId)
+        .in("status", ["searching", "matched"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        if (!options?.quiet) {
+          setQueueMessage(error.message);
+          setSyncingQueue(false);
+        }
+        return;
+      }
+
+      const activeQueue = ((data as QueueRow[] | null) ?? [])[0] ?? null;
+      applyQueueState(activeQueue);
+
+      if (activeQueue?.status === "matched") {
+        setQueueMessage("Adversaire trouve. Rejoins le lobby pour preparer la manche.");
+      }
+
+      if (!options?.quiet) {
+        setSyncingQueue(false);
+      }
+    },
+    [applyQueueState, supabase]
+  );
 
   useEffect(() => {
     async function load() {
@@ -47,54 +124,61 @@ export default function RankedPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
+        setMyUserId(null);
         setLoading(false);
         return;
       }
 
-      const [{ data: rankedData }, { data: quizData }] = await Promise.all([
-        supabase
-          .from("ranked_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("points", { ascending: false }),
+      setMyUserId(user.id);
+
+      const [{ data: quizData }, { data: queueData }] = await Promise.all([
         supabase
           .from("quizzes")
           .select("id, title, description, category, category_path, visibility, quiz_questions(count), profiles(display_name)")
           .eq("visibility", "public")
           .order("updated_at", { ascending: false })
           .limit(60),
+        supabase
+          .from("ranked_match_queue")
+          .select("id, status, matched_lobby_id, scope_type, scope_key, created_at")
+          .eq("user_id", user.id)
+          .in("status", ["searching", "matched"])
+          .order("created_at", { ascending: false })
+          .limit(1),
       ]);
 
-      setProfiles((rankedData as RankedProfile[]) ?? []);
       setQuizzes(((quizData as unknown as QuizWithCount[]) ?? []));
+
+      const activeQueue = ((queueData as QueueRow[] | null) ?? [])[0] ?? null;
+      applyQueueState(activeQueue);
+
       setLoading(false);
     }
 
     void load();
-  }, [supabase]);
+  }, [applyQueueState, supabase]);
 
-  const generalProfile = useMemo(
-    () => profiles.find((item) => item.scope_type === "general" && item.scope_key === "general") ?? null,
-    [profiles]
-  );
+  useEffect(() => {
+    if (!myUserId || queueStatus !== "searching") return;
 
-  const categoryProfiles = useMemo(
-    () => profiles.filter((item) => item.scope_type === "category"),
-    [profiles]
-  );
+    const intervalId = window.setInterval(() => {
+      void syncQueueState(myUserId, { quiet: true });
+    }, 3500);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [myUserId, queueStatus, syncQueueState]);
 
   const scopes = useMemo(() => {
-    const fromProfiles = new Set(categoryProfiles.map((item) => item.scope_key));
-    const fromQuizzes = quizzes
+    const fromQuizzes = new Set(
+      quizzes
       .map((quiz) => normalizeCategoryScope(quiz.category_path, quiz.category).toLowerCase())
-      .filter((label) => label !== "general");
+      .filter((label) => label !== "general")
+    );
 
-    for (const label of fromQuizzes) {
-      fromProfiles.add(label);
-    }
-
-    return Array.from(fromProfiles).sort((a, b) => a.localeCompare(b));
-  }, [categoryProfiles, quizzes]);
+    return Array.from(fromQuizzes).sort((a, b) => a.localeCompare(b));
+  }, [quizzes]);
 
   const filteredQuizzes = useMemo(() => {
     if (scopeFilter === "all") return quizzes;
@@ -105,6 +189,72 @@ export default function RankedPage() {
     });
   }, [quizzes, scopeFilter]);
 
+  async function handleJoinQueue() {
+    if (!myUserId) {
+      setQueueMessage("Session utilisateur introuvable.");
+      return;
+    }
+
+    const targetScope = scopeFilter === "all"
+      ? { scopeType: "general", scopeKey: "general" }
+      : { scopeType: "category", scopeKey: scopeFilter };
+
+    setBusyMatchmaking(true);
+    setQueueMessage("");
+
+    const { data, error } = await supabase.rpc("enqueue_ranked_match", {
+      p_scope_type: targetScope.scopeType,
+      p_scope_key: targetScope.scopeKey,
+      p_max_players: DEFAULT_LOBBY_MAX_PLAYERS,
+    });
+
+    if (error) {
+      setQueueMessage(error.message);
+      setBusyMatchmaking(false);
+      return;
+    }
+
+    const payload = (data ?? {}) as QueueRpcResponse;
+    setQueueScopeLabel(targetScope.scopeKey);
+
+    if (payload.status === "matched") {
+      setQueueStatus("matched");
+      setQueueLobbyId(payload.lobby_id ?? null);
+      setQueueMessage("Adversaire trouve. Rejoins le lobby pour preparer la manche.");
+    } else {
+      setQueueStatus("searching");
+      setQueueLobbyId(null);
+      setQueueMessage("Recherche en cours. En attente d'un joueur de rang compatible.");
+    }
+
+    void syncQueueState(myUserId, { quiet: true });
+    setBusyMatchmaking(false);
+  }
+
+  async function handleCancelQueue() {
+    if (!myUserId) {
+      setQueueMessage("Session utilisateur introuvable.");
+      return;
+    }
+
+    setBusyMatchmaking(true);
+    setQueueMessage("");
+
+    const { error } = await supabase.rpc("cancel_ranked_queue");
+    if (error) {
+      setQueueMessage(error.message);
+      setBusyMatchmaking(false);
+      return;
+    }
+
+    setQueueStatus("idle");
+    setQueueLobbyId(null);
+    setQueueScopeLabel("general");
+    setQueueMessage("Recherche annulee.");
+    void syncQueueState(myUserId, { quiet: true });
+    setBusyMatchmaking(false);
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -113,53 +263,80 @@ export default function RankedPage() {
     );
   }
 
-  const currentGeneralPoints = generalProfile?.points ?? 1000;
-  const currentTier = getTierFromPoints(currentGeneralPoints);
-  const nextTier = getNextTier(currentGeneralPoints);
+  const targetDurationMinutes = Math.round(TARGET_MATCH_DURATION_SECONDS / 60);
 
   return (
     <div className="space-y-6">
       <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
-        <div className="section-hero">
-          <div className="space-y-4">
-            <div>
-              <p className="hud-chip">Ranked Arena</p>
-              <h1 className="page-title mt-2">Mode classe</h1>
-            </div>
-
-            <div className="min-w-[16rem] rounded-[1.1rem] border border-[#d3c392] bg-[linear-gradient(160deg,#fff7df,#f8efd2)] p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7b5e1e]">Classement general</p>
-              <p className="mt-1 text-3xl font-black text-[#24384f]">{currentGeneralPoints} RP</p>
-              <p className="mt-0.5 text-xs text-[#6f5e3c]">Rang: {currentTier.label}</p>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e5d8b2]">
-                <div
-                  className="h-2 rounded-full bg-[linear-gradient(90deg,#dca640,#f1cb67)]"
-                  style={{ width: `${Math.round(getTierProgress(currentGeneralPoints) * 100)}%` }}
-                />
-              </div>
-              <p className="mt-1 text-[11px] text-[#6f5e3c]">
-                {nextTier
-                  ? `Prochain palier ${nextTier.label}: ${Math.max(0, nextTier.minPoints - currentGeneralPoints)} RP`
-                  : "Palier maximum atteint"}
-              </p>
-            </div>
-          </div>
-
-          <div className="section-hero-visual">
-            <div className="cover-art-meta">
-              <span className="cover-art-tag">Ranked season</span>
-              <span className="cover-art-chip">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="relative z-[1] mt-2 flex items-end justify-center">
-              <CapyRanked className="h-36 drop-shadow-sm" />
-            </div>
-          </div>
+        <div className="space-y-3">
+          <p className="hud-chip">Ranked Arena</p>
+          <h1 className="page-title mt-1">Mode classe</h1>
+          <p className="text-sm text-[#557893]">Lance la file competitive depuis ici. Les details complets de ton rang sont dans ton profil.</p>
+          <Link href="/settings?view=rank" className="inline-flex rounded-full border border-[#c9d9e8] bg-white/85 px-3 py-1.5 text-xs font-semibold text-[#2f5f84]">
+            Voir Mon rang
+          </Link>
         </div>
       </div>
 
       <div className="game-panel animate-in-up rounded-[1.35rem] border border-[#c6d8e8] p-4" style={{ animationDelay: "70ms" }}>
+        <div className="mb-3 rounded-[0.95rem] border border-[#c9d9e8] bg-white/75 p-3">
+          <p className="text-xs font-bold uppercase tracking-[0.09em] text-[#587790]">Matchmaking</p>
+          <p className="mt-1 text-sm text-[#3f627d]">
+            Scope actif: <span className="font-semibold text-[#214d70]">{scopeFilter === "all" ? "general" : scopeFilter}</span>
+          </p>
+          <p className="mt-0.5 text-sm text-[#3f627d]">
+            Etat: <span className="font-semibold text-[#214d70]">{queueStatus === "idle" ? "hors file" : queueStatus === "searching" ? "en recherche" : "match trouve"}</span>
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" disabled={busyMatchmaking || queueStatus !== "idle"} onClick={() => void handleJoinQueue()}>
+              {busyMatchmaking ? <Loader2 size={14} className="animate-spin" /> : <Swords size={14} />}
+              Entrer en file
+            </Button>
+            <Button size="sm" variant="secondary" disabled={busyMatchmaking || queueStatus !== "searching"} onClick={() => void handleCancelQueue()}>
+              Quitter la file
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={busyMatchmaking || syncingQueue || !myUserId}
+              onClick={() => {
+                if (!myUserId) return;
+                void syncQueueState(myUserId);
+              }}
+            >
+              {syncingQueue ? <Loader2 size={14} className="animate-spin" /> : null}
+              Actualiser
+            </Button>
+          </div>
+
+          {queueMessage ? <p className="mt-2 text-xs text-[#4a6a81]">{queueMessage}</p> : null}
+          {queueStatus === "matched" && queueLobbyId ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <p className="text-xs text-[#2a5d87]">Lobby: {queueLobbyId.slice(0, 8)}...</p>
+              <Link href={`/ranked/lobby/${queueLobbyId}`}>
+                <Button size="sm">
+                  <Swords size={14} /> Ouvrir le lobby
+                </Button>
+              </Link>
+            </div>
+          ) : null}
+          {queueStatus !== "idle" ? (
+            <p className="mt-1 text-[11px] uppercase tracking-[0.08em] text-[#6d88a1]">Scope file: {queueScopeLabel}</p>
+          ) : null}
+        </div>
+
+        <div className="mb-3 grid gap-2 rounded-[0.95rem] border border-[#c9d9e8] bg-white/75 p-3 text-xs text-[#3c5e78] md:grid-cols-3">
+          <p>
+            Matchmaking: <span className="font-black text-[#1e4d70]">tiers adjacents uniquement</span>
+          </p>
+          <p>
+            Lobby max: <span className="font-black text-[#1e4d70]">{DEFAULT_LOBBY_MAX_PLAYERS} joueurs</span>
+          </p>
+          <p>
+            Duree cible: <span className="font-black text-[#1e4d70]">{targetDurationMinutes} min</span>
+          </p>
+        </div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.09em] text-[#587790]">Scopes classes</p>
         <div className="flex flex-wrap gap-2">
           <button
@@ -191,26 +368,6 @@ export default function RankedPage() {
           ))}
         </div>
       </div>
-
-      {categoryProfiles.length > 0 ? (
-        <div className="game-panel animate-in-up rounded-[1.35rem] border border-[#c6d8e8] p-4" style={{ animationDelay: "110ms" }}>
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.09em] text-[#587790]">Classements specialises</p>
-          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-            {categoryProfiles.slice(0, 6).map((profile) => {
-              const tier = getTierFromPoints(profile.points);
-              return (
-                <div key={profile.id} className="rounded-[1rem] border border-[#d4e2ee] bg-white/78 p-3">
-                  <p className="truncate text-xs font-semibold uppercase tracking-[0.07em] text-[#6a86a0]">{profile.scope_key}</p>
-                  <div className="mt-1 flex items-center justify-between gap-2">
-                    <p className="text-lg font-black text-[#14334d]">{profile.points} RP</p>
-                    <span className="rounded-full bg-[#edf5ff] px-2 py-0.5 text-xs font-semibold text-[#2b5d86]">{tier.label}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
 
       {filteredQuizzes.length === 0 ? (
         <div className="game-panel rounded-[1.35rem] border border-[#c6d8e8] py-14 text-center">

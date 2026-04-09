@@ -5,11 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { copyDeck, copyQuiz } from "@/lib/actions/copy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Layers, HelpCircle, Copy, Eye, User, ShieldCheck, Swords, Users, Sparkles, Compass } from "lucide-react";
+import { Search, Layers, HelpCircle, Copy, Eye, User, Compass } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Deck, Quiz } from "@/lib/types";
-import { CapyExplore, StarBurst } from "@/components/illustrations/capi-illustrations";
+import { HeroSignalVisual } from "@/components/branding/hero-signal-visual";
 import { normalizeCategoryScope } from "@/lib/utils/ranked";
 import { clsx } from "clsx";
 
@@ -135,17 +135,13 @@ export default function ExplorePage() {
             </div>
           </div>
 
-          <div className="section-hero-visual">
-            <div className="cover-art-meta">
-              <span className="cover-art-tag">Trending content</span>
-              <span className="cover-art-chip">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="relative z-[1] mt-2 flex items-end justify-center">
-              <CapyExplore className="h-36 drop-shadow-sm" />
-            </div>
-          </div>
+          <HeroSignalVisual
+            tag="Trending content"
+            title="Bibliotheque publique"
+            icon={Compass}
+            accent="cyan"
+            chips={[tab === "decks" ? "Vue decks" : "Vue quizzes", search.trim() ? "filtre actif" : "tout public"]}
+          />
         </div>
       </div>
 
@@ -166,7 +162,9 @@ export default function ExplorePage() {
                 <div className="cover-art cover-art-deck mb-3">
                   <div className="cover-art-meta">
                     <span className="cover-art-tag">Deck public</span>
-                    <StarBurst className="h-7 w-7 opacity-80" />
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-[0.65rem] border border-cyan-300/45 bg-cyan-400/10 text-cyan-200">
+                      <Layers size={13} />
+                    </span>
                   </div>
                   <p className="relative z-[1] mt-3 max-w-[15rem] truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#4a5d61]">
                     {normalizeCategoryScope(deck.category_path, deck.category)}
@@ -223,7 +221,9 @@ export default function ExplorePage() {
                 <div className="cover-art cover-art-quiz mb-3">
                   <div className="cover-art-meta">
                     <span className="cover-art-tag">Quiz public</span>
-                    <StarBurst className="h-7 w-7 opacity-80" />
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-[0.65rem] border border-green-300/45 bg-green-400/10 text-green-200">
+                      <HelpCircle size={13} />
+                    </span>
                   </div>
                   <p className="relative z-[1] mt-3 max-w-[15rem] truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#4a5d61]">
                     {normalizeCategoryScope(quiz.category_path, quiz.category)}

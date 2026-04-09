@@ -4,27 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import {
-  LayoutDashboard,
-  Layers,
-  HelpCircle,
-  BarChart3,
-  Compass,
-  MessageSquare,
-  Bell,
-  Settings,
-  X,
-} from "lucide-react";
+  HudCloseIcon,
+  HudCogIcon,
+  HudDeckIcon,
+  HudExploreIcon,
+  HudHomeIcon,
+  HudQuizIcon,
+  HudStatsIcon,
+  HudSuggestIcon,
+  HudBellIcon,
+} from "./hud-icons";
 import { FlashMasterLogo } from "@/components/branding/flash-master-logo";
 
 const navItems = [
-  { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/decks", label: "Decks", icon: Layers },
-  { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
-  { href: "/stats", label: "Statistiques", icon: BarChart3 },
-  { href: "/explore", label: "Explorer", icon: Compass },
-  { href: "/suggestions", label: "Suggestions", icon: MessageSquare },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/settings", label: "Paramètres", icon: Settings },
+  { href: "/dashboard", label: "LOBBY", icon: HudHomeIcon },
+  { href: "/decks", label: "DECKS", icon: HudDeckIcon },
+  { href: "/quizzes", label: "QUIZ", icon: HudQuizIcon },
+  { href: "/stats", label: "STATS", icon: HudStatsIcon },
+  { href: "/explore", label: "EXPLORE", icon: HudExploreIcon },
+  { href: "/suggestions", label: "IDEAS", icon: HudSuggestIcon },
+  { href: "/notifications", label: "ALERT", icon: HudBellIcon },
+  { href: "/settings", label: "SETUP", icon: HudCogIcon },
 ];
 
 interface SidebarProps {
@@ -40,23 +40,23 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/75 lg:hidden"
           onClick={onClose}
         />
       )}
 
       <aside
         className={clsx(
-          "fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-[#c5d8e9] bg-[linear-gradient(180deg,rgba(255,255,255,.94),rgba(244,249,255,.9))] shadow-[0_24px_50px_-30px_rgba(15,35,64,.85)] backdrop-blur-xl transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0",
+          "fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r-2 border-cyan-400/45 bg-black/55 shadow-[0_0_26px_rgba(0,255,255,.22)] backdrop-blur-xl transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-24 items-center justify-between border-b border-[#d6e4f0] px-5">
-          <Link href="/dashboard" className="rounded-2xl p-1 transition hover:bg-[#eef5fc]">
+        <div className="flex h-24 items-center justify-between border-b border-cyan-400/25 px-5">
+          <Link href="/dashboard" className="rounded-2xl p-1 transition hover:bg-cyan-400/10">
             <FlashMasterLogo size="md" />
           </Link>
-          <button onClick={onClose} className="text-gray-400 hover:text-[#0f7a83] lg:hidden">
-            <X size={20} />
+          <button onClick={onClose} className="text-zinc-400 hover:text-cyan-300 lg:hidden">
+            <HudCloseIcon size={20} />
           </button>
         </div>
 
@@ -70,23 +70,23 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={clsx(
-                  "interactive-card group flex items-center gap-3 rounded-[1.1rem] px-3.5 py-3 text-sm font-semibold transition",
+                  "interactive-card group flex items-center gap-3 rounded-[0.92rem] border-2 px-3.5 py-3 font-mono text-sm font-bold uppercase tracking-[0.08em] transition-all duration-150 ease-in-out",
                   isActive
-                    ? "neon-outline bg-[#102c43] text-white"
-                    : "text-[#2a4e66] hover:bg-[#eaf2fb] hover:text-[#102c43]"
+                    ? "border-green-400 bg-green-400/12 text-green-300 shadow-[0_0_16px_rgba(57,255,20,.34)]"
+                    : "border-cyan-400/30 bg-black/30 text-cyan-200 hover:border-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-100"
                 )}
               >
-                <item.icon size={18} className={clsx(isActive ? "text-[#57d4e2]" : "text-[#4b7593] group-hover:text-[#0f7a83]")} />
+                <item.icon size={18} className={clsx(isActive ? "text-green-300" : "text-cyan-300 group-hover:text-cyan-100")} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-[#d6e4f0] px-4 py-4">
-          <div className="game-panel rounded-[1.15rem] px-3 py-3 text-xs text-[#365973]">
-            <p className="font-bold tracking-[0.07em] uppercase">Mode Focus</p>
-            <p className="mt-1">Une seule priorite a la fois pour une progression chirurgicale.</p>
+        <div className="border-t border-cyan-400/25 px-4 py-4">
+          <div className="rounded-[0.9rem] border border-purple-500/35 bg-purple-500/10 px-3 py-3 font-mono text-xs uppercase tracking-[0.08em] text-purple-200">
+            <p className="font-bold">Mode focus</p>
+            <p className="mt-1 text-[11px] text-zinc-300">No distraction. Push rank and keep streak.</p>
           </div>
         </div>
       </aside>

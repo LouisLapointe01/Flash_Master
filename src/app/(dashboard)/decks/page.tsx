@@ -4,8 +4,7 @@ import { useDecks } from "@/lib/hooks/use-decks";
 import { DeckCard } from "@/components/flashcards/deck-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus, Layers, HelpCircle, Swords, ShieldCheck, Users, Sparkles } from "lucide-react";
-import { CapyDecks, LeafSprig } from "@/components/illustrations/capi-illustrations";
+import { Plus, Layers } from "lucide-react";
 
 export default function DecksPage() {
   const { decks, loading, deleteDeck } = useDecks();
@@ -13,58 +12,37 @@ export default function DecksPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#0e8f8f]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-cyan-400" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="game-panel animate-in-up rounded-[1.45rem] border border-[#d9cfbd] p-5 lg:p-6">
-        <div className="section-hero">
-          <div className="space-y-4">
-            <div>
-              <p className="hud-chip">Collection Studio</p>
-              <h1 className="page-title mt-2">Mes Decks</h1>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Link href="/decks/new">
-                <Button>
-                  <Plus size={16} />
-                  Nouveau Deck
-                </Button>
-              </Link>
-              <Link href="/quizzes/new">
-                <Button variant="secondary">
-                  <HelpCircle size={16} />
-                  Nouveau Quiz
-                </Button>
-              </Link>
-            </div>
+    <div className="space-y-5">
+      <div className="game-panel animate-in-up p-5 lg:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="hud-chip">Deck forge</p>
+            <h1 className="page-title mt-3">Mes decks</h1>
+            <p className="mt-2 text-sm text-[var(--text-muted)]">Selectionne un niveau, etudie ou modifie en un clic.</p>
           </div>
 
-          <div className="section-hero-visual">
-            <div className="cover-art-meta">
-              <span className="cover-art-tag">Deck library</span>
-              <span className="cover-art-chip">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="relative z-[1] mt-2 flex items-end gap-2">
-              <LeafSprig className="h-16 opacity-80" />
-              <CapyDecks className="h-36 drop-shadow-sm" />
-              <LeafSprig className="h-14 opacity-60 scale-x-[-1]" />
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/decks/new">
+              <Button>
+                <Plus size={16} />
+                Nouveau Deck
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
 
       {decks.length === 0 ? (
-        <div className="game-panel animate-in-up rounded-[1.45rem] border border-[#d9cfbd] py-16 text-center" style={{ animationDelay: "80ms" }}>
-          <Layers size={48} className="mx-auto mb-4 text-[#8c8576]" />
-          <h3 className="text-lg font-semibold text-[#2b303a]">Aucun deck</h3>
-          <p className="mt-1 text-sm text-[#676258]">Creez votre premiere collection de flashcards.</p>
+        <div className="game-panel animate-in-up py-16 text-center" style={{ animationDelay: "80ms" }}>
+          <Layers size={48} className="mx-auto mb-4 text-cyan-300" />
+          <h3 className="font-mono text-lg font-black uppercase tracking-[0.08em] text-[var(--foreground)]">Aucun deck</h3>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Cree ton premier deck pour lancer ton run.</p>
           <Link href="/decks/new">
             <Button className="mt-4">
               <Plus size={16} />

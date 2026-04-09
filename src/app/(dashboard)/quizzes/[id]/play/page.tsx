@@ -396,49 +396,6 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
     return () => window.clearInterval(intervalId);
   }, [answered, currentQuestion, finished, getRemainingNow, resolveAnswer, roundReady, started]);
 
-  useEffect(() => {
-    if (finished) return;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (!started) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          startRun();
-        }
-        return;
-      }
-
-      if (!currentQuestion) return;
-
-      if (!roundReady) return;
-
-      if (answeredRef.current) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          void handleNext();
-        }
-        return;
-      }
-
-      if (event.key === "Enter") {
-        event.preventDefault();
-        handleConfirm();
-        return;
-      }
-
-      if (!["1", "2", "3", "4"].includes(event.key)) return;
-      const index = Number(event.key) - 1;
-      const answer = questionAnswers[index];
-      if (answer) {
-        event.preventDefault();
-        handleSelect(answer.id);
-      }
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [currentQuestion, finished, handleConfirm, handleNext, handleSelect, questionAnswers, roundReady, startRun, started]);
-
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -509,8 +466,8 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
               <p className="text-xs text-[#5c7d95]">Bonus actif</p>
             </div>
             <div className="rounded-[1rem] border border-[#c8d9e9] bg-white/82 p-3">
-              <p className="text-xl font-bold text-[#102c43]">1-4</p>
-              <p className="text-xs text-[#5c7d95]">Raccourcis</p>
+              <p className="text-xl font-bold text-[#102c43]">Souris</p>
+              <p className="text-xs text-[#5c7d95]">Controle unique</p>
             </div>
           </div>
 
@@ -520,7 +477,6 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
               <Button size="lg" variant="secondary">Retour</Button>
             </Link>
           </div>
-          <p className="mt-3 text-xs text-[#6b8aa0]">Entrée pour démarrer instantanément</p>
         </div>
       </div>
     );
@@ -747,6 +703,19 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
         transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-4"
       >
+        <div className="game-panel rounded-[1.6rem] border border-[#c6d8e8] p-5 text-center lg:p-7">
+          {currentQuestion.image_url && (
+            <Image
+              src={currentQuestion.image_url}
+              alt="Illustration de la question"
+              width={960}
+              height={560}
+              className="mx-auto mb-4 max-h-56 rounded-xl border border-[#c6d8e8] object-contain"
+            />
+          )}
+          <p className="text-xl font-bold text-[#102c43] lg:text-2xl">{currentQuestion.question_text}</p>
+        </div>
+
         {countdownActive ? (
           <div className="countdown-stage game-panel relative overflow-hidden rounded-[1.6rem] border border-[#c6d8e8] p-8 text-center lg:p-10">
             <div className="countdown-fx-ring" />
@@ -754,7 +723,7 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
             <div className="countdown-fx-orb countdown-fx-orb-b" />
             <div className="countdown-fx-orb countdown-fx-orb-c" />
 
-            <p className="relative z-10 text-xs font-bold uppercase tracking-[0.12em] text-[#6d8aa1]">Prochaine question</p>
+            <p className="relative z-10 text-xs font-bold uppercase tracking-[0.12em] text-[#6d8aa1]">Reponses verrouillees</p>
             <motion.p
               key={countdown}
               initial={{ opacity: 0, scale: 0.82, y: 8 }}
@@ -764,74 +733,56 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
             >
               {countdown > 0 ? countdown : "GO"}
             </motion.p>
-            <p className="relative z-10 mt-2 text-sm text-[#5a7b92]">Question et réponses révélées à GO.</p>
+            <p className="relative z-10 mt-2 text-sm text-[#5a7b92]">Lis la question, puis clique ta reponse a GO.</p>
           </div>
         ) : (
-          <>
-            <div className="game-panel rounded-[1.6rem] border border-[#c6d8e8] p-5 text-center lg:p-7">
-              {currentQuestion.image_url && (
-                <Image
-                  src={currentQuestion.image_url}
-                  alt="Illustration de la question"
-                  width={960}
-                  height={560}
-                  className="mx-auto mb-4 max-h-56 rounded-xl border border-[#c6d8e8] object-contain"
-                />
-              )}
-              <p className="text-xl font-bold text-[#102c43] lg:text-2xl">{currentQuestion.question_text}</p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8ca1]">
-                Raccourcis: 1 2 3 4 + Entrée
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {questionAnswers.map((answer, index) => {
+              const theme = ANSWER_THEMES[index % ANSWER_THEMES.length];
+              const isSelected = selectedAnswer === answer.id;
+              const isCorrect = Boolean(answer.is_correct);
+              const revealCorrect = answered && isCorrect;
+              const revealWrongSelected = answered && isSelected && !isCorrect;
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {questionAnswers.map((answer, index) => {
-                const theme = ANSWER_THEMES[index % ANSWER_THEMES.length];
-                const isSelected = selectedAnswer === answer.id;
-                const isCorrect = Boolean(answer.is_correct);
-                const revealCorrect = answered && isCorrect;
-                const revealWrongSelected = answered && isSelected && !isCorrect;
-
-                let style = `border ${theme.idle}`;
-                if (answered) {
-                  if (revealCorrect) {
-                    style = "border-2 border-emerald-400 bg-[linear-gradient(135deg,#ecfbf3,#d7f3e4)] text-[#1f6c49]";
-                  } else if (revealWrongSelected) {
-                    style = "border-2 border-rose-400 bg-[linear-gradient(135deg,#fff1f4,#ffe2e8)] text-[#912b3e]";
-                  } else {
-                    style = "border border-[#d5e3ef] bg-white/80 text-[#6b8aa0] opacity-70";
-                  }
-                } else if (isSelected) {
-                  style = `${theme.idle} ring-4 ring-[#9dc3e4]/55`;
+              let style = `border ${theme.idle}`;
+              if (answered) {
+                if (revealCorrect) {
+                  style = "border-2 border-emerald-400 bg-[linear-gradient(135deg,#ecfbf3,#d7f3e4)] text-[#1f6c49]";
+                } else if (revealWrongSelected) {
+                  style = "border-2 border-rose-400 bg-[linear-gradient(135deg,#fff1f4,#ffe2e8)] text-[#912b3e]";
+                } else {
+                  style = "border border-[#d5e3ef] bg-white/80 text-[#6b8aa0] opacity-70";
                 }
+              } else if (isSelected) {
+                style = `${theme.idle} ring-4 ring-[#9dc3e4]/55`;
+              }
 
-                return (
-                  <button
-                    key={answer.id}
-                    onClick={() => handleSelect(answer.id)}
-                    disabled={answered || !roundReady}
-                    className={clsx(
-                      "interactive-card min-h-24 w-full rounded-[1.25rem] px-4 py-3 text-left transition",
-                      style
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className={clsx(
-                        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-black",
-                        answered ? "bg-white/70 text-[#24445f]" : "bg-white/25 text-white"
-                      )}>
-                        {theme.key}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold lg:text-base">{answer.answer_text}</p>
-                        <p className={clsx("mt-1 text-[11px]", answered ? "text-[#5f7f97]" : "text-white/85")}>Touche {index + 1}</p>
-                      </div>
+              return (
+                <button
+                  key={answer.id}
+                  onClick={() => handleSelect(answer.id)}
+                  disabled={answered || !roundReady}
+                  className={clsx(
+                    "interactive-card min-h-24 w-full rounded-[1.25rem] px-4 py-3 text-left transition",
+                    style
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={clsx(
+                      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-black",
+                      answered ? "bg-white/70 text-[#24445f]" : "bg-white/25 text-white"
+                    )}>
+                      {theme.key}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold lg:text-base">{answer.answer_text}</p>
+                      <p className={clsx("mt-1 text-[11px]", answered ? "text-[#5f7f97]" : "text-white/85")}>Clique pour choisir</p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-          </>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         )}
 
         <AnimatePresence>
@@ -859,7 +810,7 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
 
         <div className="flex justify-center">
           {!answered ? (
-            <Button disabled={!selectedAnswer || !roundReady} onClick={handleConfirm}>Valider (Entrée)</Button>
+            <Button disabled={!selectedAnswer || !roundReady} onClick={handleConfirm}>Valider</Button>
           ) : (
             <Button onClick={() => void handleNext()}>
               {currentIndex < questions.length - 1 ? "Question suivante" : "Voir le bilan"}

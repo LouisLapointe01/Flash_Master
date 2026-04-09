@@ -1,15 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clsx } from "clsx";
 import { normalizeCategoryScope } from "@/lib/utils/ranked";
-import { Handshake, Send, Shield, Trophy, Users, Layers, HelpCircle, Swords, ShieldCheck, Sparkles } from "lucide-react";
+import { Handshake, Send, Shield, Trophy, Users } from "lucide-react";
 import type { Quiz } from "@/lib/types";
-import { CapySocial } from "@/components/illustrations/capi-illustrations";
+import { HeroSignalVisual } from "@/components/branding/hero-signal-visual";
 
 type FriendshipRow = {
   id: string;
@@ -257,37 +256,34 @@ export default function SocialPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#1f6f9d]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-cyan-400" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
+    <div className="space-y-5">
+      <div className="game-panel animate-in-up p-5 lg:p-6">
         <div className="section-hero">
           <div>
             <p className="hud-chip">Social Hub</p>
             <h1 className="page-title mt-2">Social</h1>
+            <p className="mt-2 max-w-xl text-sm text-[var(--text-muted)]">Ajoute des amis, rejoins des assos, et lance des challenges sans friction.</p>
           </div>
 
-          <div className="section-hero-visual">
-            <div className="cover-art-meta">
-              <span className="cover-art-tag">Social pulse</span>
-              <span className="cover-art-chip">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="relative z-[1] mt-2 flex items-end justify-center">
-              <CapySocial className="h-36 drop-shadow-sm" />
-            </div>
-          </div>
+          <HeroSignalVisual
+            tag="Social pulse"
+            title="Reseau et defis"
+            icon={Users}
+            accent="green"
+            chips={[`${acceptedFriends.length} amis`, `${associations.length} assos`, `${challenges.length} challenges`]}
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <div className="game-panel animate-in-up rounded-[1.35rem] border border-[#c6d8e8] p-4" style={{ animationDelay: "70ms" }}>
-          <p className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-[#21425d]"><Users size={14} /> Amis</p>
+        <div className="game-panel animate-in-up p-4" style={{ animationDelay: "70ms" }}>
+          <p className="mb-3 inline-flex items-center gap-2 font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]"><Users size={14} /> Amis</p>
           <div className="flex gap-2">
             <Input
               id="friend_search"
@@ -297,16 +293,16 @@ export default function SocialPage() {
             />
             <Button disabled={busy} onClick={() => void sendFriendRequest()}><Send size={14} /> Ajouter</Button>
           </div>
-          {friendError ? <p className="mt-2 text-xs text-rose-700">{friendError}</p> : null}
+          {friendError ? <p className="mt-2 text-xs text-red-400">{friendError}</p> : null}
 
           <div className="mt-4 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64849b]">Demandes recues</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Demandes recues</p>
             {pendingReceived.length === 0 ? (
-              <p className="text-xs text-[#6788a0]">Aucune demande en attente.</p>
+              <p className="text-xs text-[var(--text-muted)]">Aucune demande en attente.</p>
             ) : (
               pendingReceived.map((item) => (
-                <div key={item.id} className="rounded-[0.95rem] border border-[#d2e1ee] bg-white/85 p-2.5">
-                  <p className="text-sm font-semibold text-[#20415c]">{item.requester?.[0]?.display_name ?? "Utilisateur"}</p>
+                <div key={item.id} className="rounded-[0.95rem] border border-[var(--line)] bg-[var(--surface-soft)] p-2.5">
+                  <p className="text-sm font-semibold text-[var(--foreground)]">{item.requester?.[0]?.display_name ?? "Utilisateur"}</p>
                   <div className="mt-2 flex gap-2">
                     <Button size="sm" disabled={busy} onClick={() => void respondFriendRequest(item.id, true)}>Accepter</Button>
                     <Button size="sm" variant="secondary" disabled={busy} onClick={() => void respondFriendRequest(item.id, false)}>Refuser</Button>
@@ -317,13 +313,13 @@ export default function SocialPage() {
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64849b]">Amis valides ({acceptedFriends.length})</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Amis valides ({acceptedFriends.length})</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {acceptedFriends.length === 0 ? (
-                <span className="text-xs text-[#6788a0]">Aucun ami valide.</span>
+                <span className="text-xs text-[var(--text-muted)]">Aucun ami valide.</span>
               ) : (
                 acceptedFriends.map((friend) => (
-                  <span key={friend.id} className="rounded-full border border-[#c9d9e8] bg-white/88 px-2.5 py-1 text-xs font-semibold text-[#4d6f87]">
+                  <span key={friend.id} className="rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)]">
                     {friend.label}
                   </span>
                 ))
@@ -332,21 +328,21 @@ export default function SocialPage() {
           </div>
         </div>
 
-        <div className="game-panel animate-in-up rounded-[1.35rem] border border-[#c6d8e8] p-4" style={{ animationDelay: "100ms" }}>
-          <p className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-[#21425d]"><Shield size={14} /> Associations</p>
+        <div className="game-panel animate-in-up p-4" style={{ animationDelay: "100ms" }}>
+          <p className="mb-3 inline-flex items-center gap-2 font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]"><Shield size={14} /> Associations</p>
           <div className="space-y-2 max-h-72 overflow-auto pr-1 soft-scroll">
             {associations.length === 0 ? (
-              <p className="text-xs text-[#6788a0]">Aucune association disponible.</p>
+              <p className="text-xs text-[var(--text-muted)]">Aucune association disponible.</p>
             ) : (
               associations.map((association) => {
                 const joined = myMemberships.includes(association.id);
                 return (
-                  <div key={association.id} className="rounded-[0.95rem] border border-[#d2e1ee] bg-white/85 p-3">
+                  <div key={association.id} className="rounded-[0.95rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-[#20415c]">{association.name}</p>
-                        <p className="text-xs text-[#5d7e96]">{association.description || "Sans description"}</p>
-                        <p className="mt-1 text-[11px] text-[#6b8ca2]">
+                        <p className="text-sm font-semibold text-[var(--foreground)]">{association.name}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{association.description || "Sans description"}</p>
+                        <p className="mt-1 text-[11px] text-[var(--text-muted)]">
                           {normalizeCategoryScope(association.category_path, "General")}
                         </p>
                       </div>
@@ -362,21 +358,21 @@ export default function SocialPage() {
         </div>
       </div>
 
-      <div className="game-panel animate-in-up rounded-[1.4rem] border border-[#c6d8e8] p-4" style={{ animationDelay: "130ms" }}>
-        <p className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-[#21425d]"><Handshake size={14} /> Lancer une partie entre proches</p>
+      <div className="game-panel animate-in-up p-4" style={{ animationDelay: "130ms" }}>
+        <p className="mb-3 inline-flex items-center gap-2 font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]"><Handshake size={14} /> Lancer une partie entre proches</p>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[#64849b]">Mode</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Mode</label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setChallengeMode("ranked")}
                 className={clsx(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold",
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ease-in-out",
                   challengeMode === "ranked"
-                    ? "border-[#1f6f9d] bg-[#e8f3fb] text-[#1f5f84]"
-                    : "border-[#c9d9e8] bg-white text-[#4d6f87]"
+                    ? "border-green-400 bg-green-400/15 text-green-300"
+                    : "border-[var(--line)] bg-[var(--surface-soft)] text-[var(--foreground)]"
                 )}
               >
                 Ranked
@@ -385,10 +381,10 @@ export default function SocialPage() {
                 type="button"
                 onClick={() => setChallengeMode("training")}
                 className={clsx(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold",
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ease-in-out",
                   challengeMode === "training"
-                    ? "border-[#1f6f9d] bg-[#e8f3fb] text-[#1f5f84]"
-                    : "border-[#c9d9e8] bg-white text-[#4d6f87]"
+                    ? "border-green-400 bg-green-400/15 text-green-300"
+                    : "border-[var(--line)] bg-[var(--surface-soft)] text-[var(--foreground)]"
                 )}
               >
                 Training
@@ -397,11 +393,11 @@ export default function SocialPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[#64849b]">Ami cible</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Ami cible</label>
             <select
               value={challengeFriendId}
               onChange={(event) => setChallengeFriendId(event.target.value)}
-              className="w-full rounded-[0.9rem] border border-[#c9d9e8] bg-white/90 px-3 py-2 text-sm text-[#1f3f5a]"
+              className="w-full rounded-[0.9rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--foreground)]"
             >
               <option value="">Ouvert (sans adversaire direct)</option>
               {acceptedFriends.map((friend) => (
@@ -411,11 +407,11 @@ export default function SocialPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[#64849b]">Quiz</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Quiz</label>
             <select
               value={challengeQuizId}
               onChange={(event) => setChallengeQuizId(event.target.value)}
-              className="w-full rounded-[0.9rem] border border-[#c9d9e8] bg-white/90 px-3 py-2 text-sm text-[#1f3f5a]"
+              className="w-full rounded-[0.9rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--foreground)]"
             >
               {quizzes.map((quiz) => (
                 <option key={quiz.id} value={quiz.id}>{quiz.title}</option>
@@ -432,15 +428,15 @@ export default function SocialPage() {
 
         <div className="mt-4 grid grid-cols-1 gap-2 lg:grid-cols-2">
           {challenges.length === 0 ? (
-            <p className="text-xs text-[#6788a0]">Aucun challenge pour le moment.</p>
+            <p className="text-xs text-[var(--text-muted)]">Aucun challenge pour le moment.</p>
           ) : (
             challenges.slice(0, 8).map((challenge) => (
-              <div key={challenge.id} className="rounded-[0.95rem] border border-[#d2e1ee] bg-white/85 p-3">
-                <p className="text-sm font-semibold text-[#20415c]">{challenge.quizzes?.[0]?.title ?? "Quiz"}</p>
-                <p className="mt-0.5 text-xs text-[#5d7e96]">
+              <div key={challenge.id} className="rounded-[0.95rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
+                <p className="text-sm font-semibold text-[var(--foreground)]">{challenge.quizzes?.[0]?.title ?? "Quiz"}</p>
+                <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                   {challenge.mode.toUpperCase()} · {challenge.status}
                 </p>
-                <p className="mt-1 text-xs text-[#5d7e96]">
+                <p className="mt-1 text-xs text-[var(--text-muted)]">
                   {challenge.creator?.[0]?.display_name ?? "Createur"} vs {challenge.opponent?.[0]?.display_name ?? "Ouvert"}
                 </p>
               </div>
