@@ -1,0 +1,200 @@
+[
+  {
+    "category": "Sciences",
+    "subcategory": "Astronomie",
+    "difficulty": "facile",
+    "question": "Quelle est la planète la plus proche du Soleil ?",
+    "options": ["Mercure", "Vénus", "Terre", "Mars", "Jupiter", "Saturne", "Uranus", "Neptune", "Pluton", "Cérès", "Eris", "Makémaké", "Hauméa", "Lune", "Soleil"],
+    "answer": "Mercure",
+    "explanation": "Mercure orbite à environ 58 millions de km du Soleil."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Astronomie",
+    "difficulty": "moyen",
+    "question": "Quelle est la durée de rotation de Jupiter ?",
+    "options": ["9h 55min", "24h 30min", "12h 10min", "15h 45min", "5h 20min", "48h", "365 jours", "88 jours", "10h 30min", "14h", "20h", "6h", "30min", "100h", "1h"],
+    "answer": "9h 55min",
+    "explanation": "Jupiter est la planète qui tourne le plus vite sur elle-même dans le système solaire."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Astronomie",
+    "difficulty": "difficile",
+    "question": "Qu'est-ce que la limite d'Eddington ?",
+    "options": ["Équilibre entre pression de radiation et gravité", "Point de non-retour d'un trou noir", "Distance maximale d'une orbite", "Vitesse de la lumière dans le vide", "Température de fusion de l'hydrogène", "Rayon d'une étoile à neutrons", "Limite de visibilité d'un quasar", "Masse critique d'une naine blanche", "Vitesse d'expansion de l'univers", "Angle de réfraction galactique", "Fréquence d'un pulsar", "Densité d'une nébuleuse", "Distance Terre-Lune", "Âge de la galaxie", "Nombre d'atomes dans le soleil"],
+    "answer": "Équilibre entre pression de radiation et gravité",
+    "explanation": "Au-delà de cette luminosité, une étoile expulse ses couches externes."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Biologie",
+    "difficulty": "facile",
+    "question": "Quel organe pompe le sang dans le corps humain ?",
+    "options": ["Le Cœur", "Le Foie", "Le Poumon", "Le Rein", "Le Cerveau", "L'Estomac", "La Rate", "Le Pancréas", "L'Intestin", "La Vessie", "La Peau", "Le Diaphragme", "La Moelle", "L'Œil", "L'Oreille"],
+    "answer": "Le Cœur",
+    "explanation": "Le cœur fonctionne comme une pompe musculaire pour propulser le sang."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Biologie",
+    "difficulty": "moyen",
+    "question": "Quelle molécule porte le code génétique ?",
+    "options": ["ADN", "ARN", "Protéine", "Lipide", "Glucide", "ATP", "Hémoglobine", "Insuline", "Gluten", "Chlorophylle", "Mélanine", "Adrénaline", "Dopamine", "Sérotonine", "Oxygène"],
+    "answer": "ADN",
+    "explanation": "L'Acide Désoxyribonucléique contient toutes les instructions du vivant."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Physique",
+    "difficulty": "facile",
+    "question": "Quelle est la vitesse de la lumière (environ) ?",
+    "options": ["300 000 km/s", "150 000 km/s", "1 000 000 km/s", "1 235 km/h", "50 000 km/s", "10 000 km/s", "340 m/s", "1 km/s", "200 000 km/s", "400 000 km/s", "500 000 km/s", "600 000 km/s", "700 000 km/s", "800 000 km/s", "900 000 km/s"],
+    "answer": "300 000 km/s",
+    "explanation": "La constante c est fixée à 299 792 458 m/s."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Biologie",
+    "difficulty": "difficile",
+    "question": "Qu'est-ce que le cycle de Krebs ?",
+    "options": ["Série de réactions chimiques pour produire de l'énergie", "Mécanisme de réplication de l'ADN", "Phase de sommeil profond", "Processus de digestion des graisses", "Cycle de vie d'un virus", "Mode de division cellulaire", "Régulation du glucose", "Transport de l'oxygène", "Élimination des toxines par le foie", "Photosynthèse des algues", "Mouvement des ions sodium", "Contraction musculaire", "Apprentissage des neurones", "Vieillissement des cellules", "Mutation génétique"],
+    "answer": "Série de réactions chimiques pour produire de l'énergie",
+    "explanation": "Il se déroule dans la mitochondrie et produit de l'ATP."
+  },
+  {
+    "category": "Sciences",
+    "subcategory": "Physique",
+    "difficulty": "moyen",
+    "question": "Quelle loi régit l'attraction entre deux masses ?",
+    "options": ["La gravitation universelle", "La thermodynamique", "L'électromagnétisme", "La relativité restreinte", "La loi d'Ohm", "La loi de Murphy", "La poussée d'Archimède", "Le principe de Pascal", "La mécanique quantique", "L'effet Doppler", "L'entropie", "L'effet Joule", "La réfraction", "La diffraction", "La capillarité"],
+    "answer": "La gravitation universelle",
+    "explanation": "Formulée par Isaac Newton, elle explique pourquoi les objets tombent."
+  },
+  {
+    "category": "Histoire",
+    "subcategory": "Antiquité",
+    "difficulty": "facile",
+    "question": "Quel empereur romain a légalisé le christianisme ?",
+    "options": ["Constantin", "Néron", "César", "Auguste", "Caligula", "Tibère", "Trajan", "Hadrien", "Marc Aurèle", "Commode", "Dioclétien", "Claude", "Vespasien", "Titus", "Domitien"],
+    "answer": "Constantin",
+    "explanation": "Par l'Édit de Milan en 313."
+  },
+  {
+    "category": "Histoire",
+    "subcategory": "Histoire de France",
+    "difficulty": "facile",
+    "question": "En quelle année a eu lieu la Révolution Française ?",
+    "options": ["1789", "1799", "1804", "1776", "1815", "1648", "1492", "1515", "1914", "1337", "1848", "1870", "1945", "1968", "1214"],
+    "answer": "1789",
+    "explanation": "Elle marque la fin de la monarchie absolue et le début de la République."
+  },
+  {
+    "category": "Géographie",
+    "subcategory": "Monde",
+    "difficulty": "moyen",
+    "question": "Quel pays possède le plus d'îles au monde ?",
+    "options": ["Suède", "Norvège", "Finlande", "Canada", "Indonésie", "Philippines", "Japon", "Grèce", "Australie", "Chili", "États-Unis", "Royaume-Uni", "France", "Malaisie", "Bahamas"],
+    "answer": "Suède",
+    "explanation": "La Suède compte plus de 267 000 îles."
+  },
+  {
+    "category": "Histoire",
+    "subcategory": "Guerres Mondiales",
+    "difficulty": "moyen",
+    "question": "Comment s'appelait l'opération du débarquement en Normandie ?",
+    "options": ["Overlord", "Barbarossa", "Dynamo", "Market Garden", "Torch", "Neptune", "Anvil", "Husky", "Avalanche", "Omaha", "Utah", "Juno", "Sword", "Gold", "Zebra"],
+    "answer": "Overlord",
+    "explanation": "Lancée le 6 juin 1944."
+  },
+  {
+    "category": "Géographie",
+    "subcategory": "France",
+    "difficulty": "facile",
+    "question": "Quel est le plus long fleuve de France ?",
+    "options": ["La Loire", "La Seine", "Le Rhône", "La Garonne", "Le Rhin", "La Meuse", "La Dordogne", "La Charente", "L'Adour", "Le Lot", "La Marne", "Le Tarn", "Le Doubs", "L'Isère", "La Saône"],
+    "answer": "La Loire",
+    "explanation": "Elle mesure 1 006 kilomètres."
+  },
+  {
+    "category": "Histoire",
+    "subcategory": "Antiquité",
+    "difficulty": "difficile",
+    "question": "Quelle cité a gagné la guerre du Péloponnèse ?",
+    "options": ["Sparte", "Athènes", "Thèbes", "Corinthe", "Argos", "Mégare", "Érétrie", "Chalcis", "Milet", "Samos", "Rhodes", "Carthage", "Rome", "Alexandrie", "Troie"],
+    "answer": "Sparte",
+    "explanation": "Sparte a vaincu Athènes en 404 av. J.-C."
+  },
+  {
+    "category": "Géographie",
+    "subcategory": "Climat",
+    "difficulty": "moyen",
+    "question": "Quel gaz compose majoritairement l'atmosphère terrestre ?",
+    "options": ["Azote", "Oxygène", "Argon", "Dioxyde de carbone", "Néon", "Hélium", "Méthane", "Krypton", "Hydrogène", "Xénon", "Ozone", "Vapeur d'eau", "Monoxyde de carbone", "Protoxyde d'azote", "Soufre"],
+    "answer": "Azote",
+    "explanation": "L'azote représente environ 78% de l'air."
+  },
+  {
+    "category": "Arts",
+    "subcategory": "Peinture",
+    "difficulty": "facile",
+    "question": "Qui a peint la Joconde ?",
+    "options": ["Léonard de Vinci", "Michel-Ange", "Raphaël", "Donatello", "Picasso", "Van Gogh", "Monet", "Dali", "Rembrandt", "Vermeer", "Caravage", "Botticelli", "Manet", "Cézanne", "Renoir"],
+    "answer": "Léonard de Vinci",
+    "explanation": "Peinte entre 1503 et 1506, elle est exposée au Louvre."
+  },
+  {
+    "category": "Société",
+    "subcategory": "Jeux Vidéo",
+    "difficulty": "moyen",
+    "question": "Quel est le jeu vidéo le plus vendu de tous les temps ?",
+    "options": ["Minecraft", "Tetris", "GTA V", "Wii Sports", "Super Mario Bros", "PUBG", "Pac-Man", "Pokémon Rouge/Bleu", "Diablo III", "The Witcher 3", "Skyrim", "FIFA 23", "Fortnite", "League of Legends", "Roblox"],
+    "answer": "Minecraft",
+    "explanation": "Avec plus de 300 millions d'exemplaires vendus."
+  },
+  {
+    "category": "Arts",
+    "subcategory": "Musique",
+    "difficulty": "facile",
+    "question": "Combien de cordes possède normalement une guitare classique ?",
+    "options": ["6", "4", "5", "12", "7", "8", "10", "3", "2", "1", "9", "11", "24", "47", "21"],
+    "answer": "6",
+    "explanation": "Les cordes sont généralement Mi, La, Ré, Sol, Si, Mi."
+  },
+  {
+    "category": "Société",
+    "subcategory": "Gastronomie",
+    "difficulty": "facile",
+    "question": "Quel ingrédient est la base du chocolat ?",
+    "options": ["Cacao", "Café", "Vanille", "Lait", "Sucre", "Noisette", "Amande", "Farine", "Œuf", "Beurre", "Levure", "Sel", "Poivre", "Cannelle", "Miel"],
+    "answer": "Cacao",
+    "explanation": "Le chocolat est produit à partir des fèves de l'arbre cacaoyer."
+  },
+  {
+    "category": "Société",
+    "subcategory": "Sport",
+    "difficulty": "moyen",
+    "question": "Quelle distance mesure un marathon ?",
+    "options": ["42,195 km", "40 km", "50 km", "21 km", "10 km", "100 km", "35 km", "45,5 km", "38,2 km", "44 km", "41 km", "43,5 km", "30 km", "25 km", "42,5 km"],
+    "answer": "42,195 km",
+    "explanation": "Cette distance a été fixée lors des JO de Londres en 1908."
+  },
+  {
+    "category": "Arts",
+    "subcategory": "Cinéma",
+    "difficulty": "difficile",
+    "question": "Quel film a remporté le premier Oscar du meilleur film en 1929 ?",
+    "options": ["Wings", "Metropolis", "Le Chanteur de Jazz", "L'Aurore", "Napoléon", "Le Cirque", "Les Lumières de la Ville", "Ben-Hur", "Casablanca", "Gone with the Wind", "Nosferatu", "Cabiria", "Intolérance", "M le maudit", "La Ruée vers l'or"],
+    "answer": "Wings",
+    "explanation": "Wings est un film muet sur les pilotes de la Première Guerre mondiale."
+  },
+  {
+    "category": "Société",
+    "subcategory": "Jeux Vidéo",
+    "difficulty": "difficile",
+    "question": "En quelle année est sorti le premier jeu 'The Legend of Zelda' au Japon ?",
+    "options": ["1986", "1983", "1985", "1987", "1988", "1989", "1990", "1991", "1984", "1982", "1981", "1980", "1992", "1993", "1994"],
+    "answer": "1986",
+    "explanation": "Sorti sur le Famicom Disk System le 21 février 1986."
+  }
+]

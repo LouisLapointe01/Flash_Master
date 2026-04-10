@@ -14,7 +14,6 @@
     "quality:full": "npm run test && npm run bench:run"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.102.1",
     "clsx": "^2.1.1",

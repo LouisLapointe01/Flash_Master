@@ -14,152 +14,105 @@ interface StudyCardProps {
 
 export function StudyCard({ card, onRate }: StudyCardProps) {
   const [flipped, setFlipped] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const intervals = [
+    { key: "again" as const, label: "A revoir" },
+    { key: "hard" as const, label: "Difficile" },
+    { key: "good" as const, label: "Bien" },
+    { key: "easy" as const, label: "Facile" },
+  ];
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
-      {/* Card */}
-      <div
-        className="relative h-[31rem] cursor-pointer"
+    <div className="mx-auto w-full max-w-xl px-4">
+      {/* Card Container */}
+      <div 
+        className="relative aspect-[4/3] w-full cursor-pointer"
         onClick={() => setFlipped(!flipped)}
         style={{ perspective: "1200px" }}
       >
         <motion.div
           className="absolute inset-0"
           animate={{ rotateY: flipped ? 180 : 0 }}
-          transition={{ duration: 0.5, type: "spring", stiffness: 300, damping: 30 }}
+          transition={{ duration: 0.5, type: "spring", stiffness: 260, damping: 20 }}
           style={{ transformStyle: "preserve-3d" }}
         >
-          {/* Front */}
-          <div
-            className="absolute inset-0 flex flex-col rounded-3xl border border-[#d9cfbd] bg-[linear-gradient(165deg,#fffdf8,#f4efe5)] p-6 text-center shadow-[0_20px_50px_-28px_rgba(71,59,39,.46)]"
+          {/* Front side */}
+          <div 
+            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 p-8 shadow-xl"
             style={{ backfaceVisibility: "hidden" }}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <span className="cover-art-tag">Recto</span>
-              <FlashMasterLogo size="sm" withWordmark={false} className="rounded-[0.8rem] bg-white/72 p-1" />
+            <FlashMasterLogo size="sm" withWordmark={false} className="absolute top-4 left-4 opacity-20" />
+            <div className="text-center">
+              {card.front_image_url && (
+                <div className="mb-6 max-h-48 overflow-hidden rounded-lg">
+                  <img src={card.front_image_url} alt="Flashcard front" className="h-full w-full object-contain" />
+                </div>
+              )}
+              <p className="text-2xl font-black uppercase tracking-tighter text-white md:text-3xl">{card.front_text}</p>
             </div>
-
-            {card.front_image_url && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPreviewImage(card.front_image_url ?? null);
-                }}
-                className="group relative mb-4 block overflow-hidden rounded-2xl border border-[#e2daca] bg-[#f8f4eb]"
-              >
-                <Image
-                  src={card.front_image_url}
-                  alt="Illustration recto"
-                  width={900}
-                  height={420}
-                  className="h-56 w-full object-cover md:h-64"
-                />
-                <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/65 px-2 py-1 text-xs text-white">
-                  <Maximize2 size={12} /> Agrandir
-                </span>
-              </button>
-            )}
-            <p className="mt-auto text-xl font-semibold text-[#2b303a] md:text-2xl">{card.front_text}</p>
-            <p className="mt-4 flex items-center justify-center gap-1 text-xs text-[#7b7466]">
-              <RotateCcw size={12} /> Cliquer pour retourner
-            </p>
           </div>
 
-          {/* Back */}
-          <div
-            className="absolute inset-0 flex flex-col rounded-3xl border border-[#d9cfbd] bg-[linear-gradient(170deg,#f7f2e8,#efe6d6)] p-6 text-center shadow-[0_20px_50px_-28px_rgba(71,59,39,.46)]"
+          {/* Back side */}
+          <div 
+            className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-xl"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <span className="cover-art-tag">Verso</span>
-              <FlashMasterLogo size="sm" withWordmark={false} className="rounded-[0.8rem] bg-white/72 p-1" />
+            <FlashMasterLogo size="sm" withWordmark={false} className="absolute top-4 left-4 opacity-20" />
+            <div className="text-center">
+              {card.back_image_url && (
+                <div className="mb-6 max-h-48 overflow-hidden rounded-lg">
+                  <img src={card.back_image_url} alt="Flashcard back" className="h-full w-full object-contain" />
+                </div>
+              )}
+              <p className="text-2xl font-black uppercase tracking-tighter text-secondary md:text-3xl">{card.back_text}</p>
             </div>
-
-            {card.back_image_url && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPreviewImage(card.back_image_url ?? null);
-                }}
-                className="group relative mb-4 block overflow-hidden rounded-2xl border border-[#e2daca] bg-[#f8f4eb]"
-              >
-                <Image
-                  src={card.back_image_url}
-                  alt="Illustration verso"
-                  width={900}
-                  height={420}
-                  className="h-56 w-full object-cover md:h-64"
-                />
-                <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/65 px-2 py-1 text-xs text-white">
-                  <Maximize2 size={12} /> Agrandir
-                </span>
-              </button>
-            )}
-            <p className="mt-auto text-xl font-semibold text-[#2b303a] md:text-2xl">{card.back_text}</p>
-            {card.explanation && (
-              <p className="mt-3 rounded-xl border border-[#e5ddce] bg-white/75 px-3 py-2 text-sm italic text-[#676258]">
-                {card.explanation}
-              </p>
-            )}
           </div>
         </motion.div>
       </div>
 
-      {/* Rating buttons — only show when flipped */}
-      {flipped && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 flex flex-wrap justify-center gap-3"
-        >
-          {[
-            { key: "again" as const, label: "A revoir", color: "border-[#e6c7c7] bg-[#f9e6e6] text-[#8a3d3d] hover:bg-[#f7dada]" },
-            { key: "hard" as const, label: "Difficile", color: "border-[#e6d3b8] bg-[#f8efde] text-[#7a5e2f] hover:bg-[#f5e6cb]" },
-            { key: "good" as const, label: "Bien", color: "border-[#b7d4bb] bg-[#e7f2e8] text-[#3f6a46] hover:bg-[#dcecdc]" },
-            { key: "easy" as const, label: "Facile", color: "border-[#cdbfa9] bg-[#f3ece0] text-[#5f584d] hover:bg-[#eee4d5]" },
-          ].map((btn) => (
-            <button
-              key={btn.key}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setFlipped(false);
-                onRate(btn.key);
-              }}
-              className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${btn.color}`}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </motion.div>
-      )}
+      {/* Info Panel Below Card */}
+      <div className="min-h-[12rem] py-8">
+        {flipped && card.explanation && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+          >
+            <h4 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Explications</h4>
+            <div className="max-h-48 overflow-y-auto pr-2 text-sm leading-relaxed text-zinc-300">
+              {card.explanation}
+            </div>
+          </motion.div>
+        )}
+      </div>
 
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="relative max-h-[90vh] w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setPreviewImage(null)}
-              className="absolute right-2 top-2 z-10 rounded-full bg-black/70 p-2 text-white hover:bg-black"
-            >
-              <X size={18} />
-            </button>
-            <Image
-              src={previewImage}
-              alt="Apercu"
-              width={1600}
-              height={1000}
-              className="max-h-[90vh] w-full rounded-2xl object-contain"
-            />
+      {/* Controls */}
+      <div className="flex flex-col items-center gap-6">
+        {!flipped ? (
+          <button
+            onClick={() => setFlipped(true)}
+            className="w-full rounded-full bg-white px-8 py-4 text-xs font-black uppercase tracking-widest text-black transition-transform hover:scale-105 active:scale-95"
+          >
+            Révéler la réponse
+          </button>
+        ) : (
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4">
+            {intervals.map((btn) => (
+              <button
+                key={btn.key}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFlipped(false);
+                  onRate(btn.key);
+                }}
+                className="rounded-xl border border-zinc-800 bg-zinc-900 py-4 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-white hover:bg-zinc-800"
+              >
+                {btn.label}
+              </button>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

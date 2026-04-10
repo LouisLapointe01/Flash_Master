@@ -1,89 +1,51 @@
 @import "tailwindcss";
 
 :root {
-  --background: #03060d;
-  --foreground: #eef6ff;
-  --text-muted: #99aec6;
+  --background: #09090b; /* zinc-950 */
+  --foreground: #fafafa; /* zinc-50 */
+  --text-muted: #a1a1aa; /* zinc-400 */
 
-  --surface: rgba(7, 13, 24, 0.72);
-  --surface-strong: rgba(9, 16, 30, 0.92);
-  --surface-soft: rgba(13, 22, 40, 0.56);
+  --surface: #18181b; /* zinc-900 */
+  --surface-strong: #27272a; /* zinc-800 */
+  --surface-soft: #09090b;
 
-  --line: rgba(0, 255, 255, 0.26);
-  --line-strong: rgba(57, 255, 20, 0.36);
+  --line: #27272a; /* zinc-800 */
+  --line-strong: #3f3f46; /* zinc-700 */
 
   --primary: #39ff14;
   --primary-strong: #22d63d;
   --secondary: #00ffff;
   --tertiary: #bf00ff;
-  --danger: #ff003f;
+  --danger: #ef4444;
 
-  --bg-radial-a: rgba(0, 255, 255, 0.16);
-  --bg-radial-b: rgba(191, 0, 255, 0.14);
-  --bg-radial-c: rgba(57, 255, 20, 0.1);
-  --bg-linear-top: #03060d;
-  --bg-linear-bottom: #050a14;
-  --bg-grid-line: rgba(0, 255, 255, 0.08);
+  --bg-radial-a: rgba(0, 255, 255, 0.05);
+  --bg-radial-b: rgba(191, 0, 255, 0.05);
+  --bg-radial-c: rgba(57, 255, 20, 0.03);
+  --bg-linear-top: #09090b;
+  --bg-linear-bottom: #000000;
+  --bg-grid-line: rgba(255, 255, 255, 0.02);
 
-  --hud-bg: rgba(0, 0, 0, 0.5);
-  --hud-border: rgba(0, 255, 255, 0.35);
-  --hud-pill-bg: rgba(6, 18, 31, 0.68);
-
-  --panel-shadow:
-    0 0 0 1px rgba(0, 255, 255, 0.14),
-    0 0 24px rgba(0, 255, 255, 0.15),
-    0 18px 38px -28px rgba(0, 0, 0, 0.86),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-
-  --radius-sm: 0.9rem;
-  --radius-md: 1.15rem;
-  --radius-lg: 1.45rem;
-  --radius-xl: 1.8rem;
-}
-
-[data-theme="light"] {
-  --background: #eef4ff;
-  --foreground: #112641;
-  --text-muted: #516983;
-
-  --surface: rgba(255, 255, 255, 0.76);
-  --surface-strong: rgba(255, 255, 255, 0.92);
-  --surface-soft: rgba(241, 247, 255, 0.82);
-
-  --line: rgba(35, 122, 193, 0.35);
-  --line-strong: rgba(22, 163, 74, 0.42);
-
-  --bg-radial-a: rgba(60, 194, 255, 0.24);
-  --bg-radial-b: rgba(150, 107, 255, 0.2);
-  --bg-radial-c: rgba(44, 193, 109, 0.14);
-  --bg-linear-top: #f4f8ff;
-  --bg-linear-bottom: #deebff;
-  --bg-grid-line: rgba(60, 131, 197, 0.12);
-
-  --hud-bg: rgba(255, 255, 255, 0.6);
-  --hud-border: rgba(71, 139, 201, 0.36);
-  --hud-pill-bg: rgba(245, 249, 255, 0.86);
-
-  --panel-shadow:
-    0 0 0 1px rgba(71, 139, 201, 0.12),
-    0 8px 28px -20px rgba(22, 41, 74, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 }
 
 html,
 body {
   min-height: 100%;
+  background-color: var(--background);
 }
 
 body {
   position: relative;
-  background:
-    radial-gradient(56rem 26rem at -12% -20%, var(--bg-radial-a), transparent 66%),
-    radial-gradient(44rem 22rem at 112% -8%, var(--bg-radial-b), transparent 68%),
-    radial-gradient(34rem 18rem at 50% 118%, var(--bg-radial-c), transparent 66%),
-    linear-gradient(180deg, var(--bg-linear-top) 0%, var(--bg-linear-bottom) 100%);
+  background: 
+    radial-gradient(circle at 0% 0%, var(--bg-radial-a), transparent 50%),
+    radial-gradient(circle at 100% 0%, var(--bg-radial-b), transparent 50%),
+    var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 body::before {
