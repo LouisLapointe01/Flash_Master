@@ -22,7 +22,7 @@ export default async function TrainingPage() {
   const premiumStatus = await getUserPremiumStatus();
   const isPremium = premiumStatus?.isPremium ?? false;
   const actionBalance = premiumStatus?.actionPoints?.balance ?? 0;
-  const canLaunchTraining = isPremium || actionBalance > 0;
+  const canLaunchTraining = true; // throttling désactivé temporairement
 
   const { data } = await supabase
     .from("quizzes")

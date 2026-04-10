@@ -107,10 +107,28 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
 
   const questions = useMemo(() => quiz?.quiz_questions ?? [], [quiz?.quiz_questions]);
   const currentQuestion = questions[currentIndex];
-  const questionAnswers = useMemo(
-    () => currentQuestion?.quiz_answers ?? [],
-    [currentQuestion?.quiz_answers]
-  );
+
+  // Dynamic Answer Selection: 1 correct + 3 random incorrect from the pool
+  const questionAnswers = useMemo(() => {
+    if (!currentQuestion?.quiz_answers) return [];
+    
+    const allAnswers = [...currentQuestion.quiz_answers];
+    const correctOnes = allAnswers.filter(a => a.is_correct);
+    const incorrectOnes = allAnswers.filter(a => !a.is_correct);
+
+    // Pick 1 correct (if multiple, pick one)
+    // eslint-disable-next-line
+    const correct = correctOnes[Math.floor(Math.random() * correctOnes.length)] || allAnswers[0];
+
+    // Shuffle and pick 3 incorrect
+    // eslint-disable-next-line
+    const shuffledIncorrect = incorrectOnes.sort(() => 0.5 - Math.random());
+    const selectedIncorrect = shuffledIncorrect.slice(0, 3);
+
+    // Combine and shuffle for display
+    // eslint-disable-next-line
+    return [correct, ...selectedIncorrect].sort(() => 0.5 - Math.random());
+  }, [currentQuestion, currentIndex]); // currentIndex added to reshuffle if coming back or re-rendering
   const isRankedMode = searchParams.get("mode") === "ranked";
   const rankedScopeParam = searchParams.get("scope") === "category" ? "category" : "general";
 
@@ -202,7 +220,7 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
     setRemainingMs(QUESTION_TIME_MS);
   }, []);
 
-  const startRun = useCallback(() => {
+  const startRun = useCallback(async () => {
     const now = performance.now();
     quizStartedAtRef.current = now;
     questionStartedAtRef.current = 0;
