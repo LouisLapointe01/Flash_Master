@@ -66,7 +66,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 60);
-      setQuery("");
+      setQuery(""); // eslint-disable-line react-hooks/set-state-in-effect
       setActiveCategory(null);
       setResults([]);
       setFocused(0);

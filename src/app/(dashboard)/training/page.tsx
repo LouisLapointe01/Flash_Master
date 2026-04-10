@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getUserPremiumStatus } from "@/lib/actions/action-points";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { buildTrainingScopeOptions, type TrainingQuizSource } from "@/lib/utils/training";
@@ -18,6 +19,10 @@ export default async function TrainingPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const premiumStatus = await getUserPremiumStatus();
+  const isPremium = premiumStatus?.isPremium ?? false;
+  const actionBalance = premiumStatus?.actionPoints?.balance ?? 0;
+  const canLaunchTraining = isPremium || actionBalance > 0;
 
   const { data } = await supabase
     .from("quizzes")
@@ -43,6 +48,16 @@ export default async function TrainingPage() {
         <p className="mt-2 max-w-3xl text-sm text-[var(--text-muted)]">
           Choisis un scope de revision (global, categorie, sous-categorie) et lance une manche. Chaque ligne affiche le volume disponible.
         </p>
+        {!isPremium ? (
+          <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+            ⚡ Points d&apos;action restants: {actionBalance}
+          </p>
+        ) : null}
+        {!isPremium && !canLaunchTraining ? (
+          <p className="mt-2 text-sm text-[#a34d4d]">
+            Solde epuise: impossible de lancer une manche training pour le moment.
+          </p>
+        ) : null}
       </section>
 
       <section className="game-panel p-4 lg:p-5">
@@ -68,11 +83,17 @@ export default async function TrainingPage() {
                 </div>
 
                 {scope.sampleQuizId ? (
-                  <Link href={`/quizzes/${scope.sampleQuizId}/play?mode=training&scope=${encodeURIComponent(scope.key)}`}>
-                    <Button size="sm">
-                      <Play size={14} /> Lancer
+                  canLaunchTraining ? (
+                    <Link href={`/quizzes/${scope.sampleQuizId}/play?mode=training&scope=${encodeURIComponent(scope.key)}`}>
+                      <Button size="sm">
+                        <Play size={14} /> Lancer
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button size="sm" variant="secondary" disabled title="Points d'action insuffisants">
+                      <Play size={14} /> Points insuffisants
                     </Button>
-                  </Link>
+                  )
                 ) : (
                   <Button size="sm" variant="secondary" disabled>
                     <Target size={14} /> Indisponible
