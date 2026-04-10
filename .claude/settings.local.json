@@ -10,7 +10,16 @@
       "Bash(ssh-keygen:*)",
       "Bash(~/.ssh/config:*)",
       "Bash(GIT_ASKPASS_OVERRIDE=\"true\" git:*)",
-      "Bash(cmdkey:*)"
+      "Bash(cmdkey:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(npx supabase:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_8d4735366389e132685696ded05cfa31cf68031b npx supabase:*)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ]
   }
 }
