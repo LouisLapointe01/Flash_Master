@@ -523,3 +523,23 @@ Ajouts majeurs recents confirmes:
 - ajout de tests utilitaires et benchmarks complementaires
 
 Ce snapshot sert de base de travail pour toute prochaine intervention Claude.
+
+---
+
+## 24) Convention git - Branch main uniquement (2026-04-10)
+
+**Décision:** Centraliser tout le travail sur la branche `main`. La branche `master` a été supprimée (localement et sur le remote GitHub).
+
+**Raison:** Simplifier la gestion de branches et aligner avec la convention moderne de GitHub (main comme branche par défaut).
+
+**Règles:**
+- Tous les commits et PRs doivent cibler `main`
+- Pas de travail sur d'autres branches permanentes
+- Si besoin de branche temporaire: créer depuis `main`, puis merger vers `main`
+- Configuration git: email `naviscrew31@gmail.com` (utente Louis Lapointe)
+
+**Actions prises:**
+- ✅ Branche `master` supprimée localement et sur origin
+- ✅ Configuration git avec email et nom utilisateur
+- ✅ Tous les changements actuels migrés vers `main`
+- ✅ Premier commit de la migration: `8840303`
