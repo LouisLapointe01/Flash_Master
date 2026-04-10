@@ -536,7 +536,9 @@ Ce snapshot sert de base de travail pour toute prochaine intervention Claude.
 - Tous les commits et PRs doivent cibler `main`
 - Pas de travail sur d'autres branches permanentes
 - Si besoin de branche temporaire: créer depuis `main`, puis merger vers `main`
-- Configuration git: email `naviscrew31@gmail.com` (utente Louis Lapointe)
+- **IMPORTANT:** Configuration git utilisateur: `louislapointe01` - JAMAIS `hapiix` - JAMAIS d'autre compte
+- Email: `naviscrew31@gmail.com`
+- À chaque session: vérifier `git config user.name` et `git config user.email` avant de commiter/pousher
 
 **Actions prises:**
 - ✅ Branche `master` supprimée localement et sur origin
