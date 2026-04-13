@@ -1,6 +1,5 @@
-import { LobbyModeLauncher } from "@/components/lobby/lobby-mode-launcher";
 import Link from "next/link";
-import { BarChart3, Bell, Compass, HelpCircle, Layers, MessageSquare, Settings, ShieldCheck } from "lucide-react";
+import { BarChart3, Bell, Compass, HelpCircle, Layers, MessageSquare, Play, Settings, ShieldCheck } from "lucide-react";
 
 const DASHBOARD_BRICKS = [
   {
@@ -60,25 +59,27 @@ export default async function DashboardPage() {
     <div className="space-y-5">
       <section className="game-panel animate-in-up p-6 lg:p-8">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="hud-chip">Menu principal</p>
-          <h1 className="page-title mt-4">Flash Master</h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-muted)] lg:text-base">
-            Choisis ton mode de jeu, puis clique sur Jouer pour lancer le lobby.
+          <p className="hud-chip">Accueil joueur</p>
+          <h1 className="page-title mt-3">Jouer</h1>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-[var(--text-muted)]">
+            Lance une partie classée ou un entrainement. Le choix de mode se fait sur l&apos;écran suivant.
           </p>
 
-          <LobbyModeLauncher />
+          <div className="mt-6 flex justify-center">
+            <Link href="/play">
+              <span className="inline-flex items-center gap-2 rounded-[1rem] border-2 border-green-300 bg-[linear-gradient(145deg,#39ff14,#00ffaa)] px-8 py-4 font-mono text-xl font-black uppercase tracking-[0.14em] text-black shadow-[0_0_24px_rgba(57,255,20,.45)] transition hover:scale-[1.03]">
+                <Play size={20} /> Jouer
+              </span>
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="game-panel animate-in-up p-5 lg:p-6" style={{ animationDelay: "80ms" }}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="hud-chip">Briques rapides</p>
-            <h2 className="mt-2 font-mono text-lg font-black uppercase tracking-[0.08em] text-[var(--foreground)]">
-              Autres modules
-            </h2>
+            <h2 className="font-mono text-lg font-black uppercase tracking-[0.08em] text-[var(--foreground)]">Modules</h2>
           </div>
-          <p className="text-xs uppercase tracking-[0.08em] text-[var(--text-muted)]">Apres le launcher</p>
         </div>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">

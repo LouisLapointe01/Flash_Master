@@ -111,7 +111,7 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
   // Dynamic Answer Selection: 1 correct + 3 random incorrect from the pool
   const questionAnswers = useMemo(() => {
     if (!currentQuestion?.quiz_answers) return [];
-    
+
     const allAnswers = [...currentQuestion.quiz_answers];
     const correctOnes = allAnswers.filter(a => a.is_correct);
     const incorrectOnes = allAnswers.filter(a => !a.is_correct);
@@ -417,19 +417,19 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#1f6f9d]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--secondary)]" />
       </div>
     );
   }
 
   if (!quiz) {
-    return <div className="py-16 text-center text-[#5f7f97]">Quiz introuvable</div>;
+    return <div className="py-16 text-center text-[var(--text-muted)]">Quiz introuvable</div>;
   }
 
   if (questions.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-[#5f7f97]">Ce quiz ne contient aucune question.</p>
+        <p className="text-[var(--text-muted)]">Ce quiz ne contient aucune question.</p>
         <Link href={`/quizzes/${id}/edit`}>
           <Button className="mt-4">Ajouter des questions</Button>
         </Link>
@@ -458,34 +458,34 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
   if (!started) {
     return (
       <div className="mx-auto max-w-3xl space-y-6 py-8">
-        <div className="game-panel animate-in-up rounded-[1.8rem] border border-[#c6d8e8] p-6 text-center lg:p-8">
+        <div className="game-panel animate-in-up rounded-[1.8rem] border border-[var(--line)] p-6 text-center lg:p-8">
           <div className="flex flex-wrap items-center justify-center gap-2">
             <p className="hud-chip">Préparation manche</p>
             {isRankedMode ? (
-              <p className="hud-chip border-[#d7b057] bg-[#f7eccd] text-[#805b14]">Mode classé · {rankedScopeLabel}</p>
+              <p className="hud-chip border-[var(--line-strong)] bg-[rgba(245,158,11,0.16)] text-amber-300">Mode classé · {rankedScopeLabel}</p>
             ) : null}
           </div>
-          <h1 className="mt-4 text-3xl font-black text-[#102c43]">{quiz.title}</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-[#54758d]">
+          <h1 className="mt-4 text-3xl font-black text-[var(--foreground)]">{quiz.title}</h1>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--text-muted)]">
             {quiz.description || "Une manche rapide, rythmée, pensée pour la précision puis la vitesse."}
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-left lg:grid-cols-4">
-            <div className="rounded-[1rem] border border-[#c8d9e9] bg-white/82 p-3">
-              <p className="text-xl font-bold text-[#102c43]">{questions.length}</p>
-              <p className="text-xs text-[#5c7d95]">Questions</p>
+            <div className="rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
+              <p className="text-xl font-bold text-[var(--foreground)]">{questions.length}</p>
+              <p className="text-xs text-[var(--text-muted)]">Questions</p>
             </div>
-            <div className="rounded-[1rem] border border-[#c8d9e9] bg-white/82 p-3">
-              <p className="text-xl font-bold text-[#102c43]">18s</p>
-              <p className="text-xs text-[#5c7d95]">Par question</p>
+            <div className="rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
+              <p className="text-xl font-bold text-[var(--foreground)]">18s</p>
+              <p className="text-xs text-[var(--text-muted)]">Par question</p>
             </div>
-            <div className="rounded-[1rem] border border-[#c8d9e9] bg-white/82 p-3">
-              <p className="text-xl font-bold text-[#102c43]">Vitesse</p>
-              <p className="text-xs text-[#5c7d95]">Bonus actif</p>
+            <div className="rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
+              <p className="text-xl font-bold text-[var(--foreground)]">Vitesse</p>
+              <p className="text-xs text-[var(--text-muted)]">Bonus actif</p>
             </div>
-            <div className="rounded-[1rem] border border-[#c8d9e9] bg-white/82 p-3">
-              <p className="text-xl font-bold text-[#102c43]">Souris</p>
-              <p className="text-xs text-[#5c7d95]">Controle unique</p>
+            <div className="rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
+              <p className="text-xl font-bold text-[var(--foreground)]">Souris</p>
+              <p className="text-xs text-[var(--text-muted)]">Controle unique</p>
             </div>
           </div>
 
@@ -505,36 +505,36 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
     const avgReaction =
       answers.length > 0
         ? Math.round(
-            (answers.reduce((sum, item) => sum + (QUESTION_TIME_MS - item.remainingMs), 0) /
-              answers.length /
-              100) // convert ms to 0.1s
-          ) / 10
+          (answers.reduce((sum, item) => sum + (QUESTION_TIME_MS - item.remainingMs), 0) /
+            answers.length /
+            100) // convert ms to 0.1s
+        ) / 10
         : 0;
     const timeouts = answers.filter((item) => item.timedOut).length;
 
     return (
       <div className="mx-auto max-w-3xl space-y-6 py-10">
-        <div className="game-panel animate-in-up rounded-[1.8rem] border border-[#c6d8e8] p-6 text-center lg:p-8">
-          <Trophy size={64} className={clsx("mx-auto", accuracy >= 70 ? "text-[#f2b233]" : "text-[#8aa2b8]")} />
-          <h2 className="mt-4 text-2xl font-bold text-[#102c43]">Session terminée</h2>
-          <p className="mt-1 text-sm text-[#54758d]">{getRankLabel(accuracy)}</p>
-          <p className="mt-4 text-4xl font-black text-[#1f6f9d]">{scorePoints} pts</p>
-          <p className="mt-1 text-sm text-[#54758d]">
+        <div className="game-panel animate-in-up rounded-[1.8rem] border border-[var(--line)] p-6 text-center lg:p-8">
+          <Trophy size={64} className={clsx("mx-auto", accuracy >= 70 ? "text-amber-300" : "text-[var(--text-muted)]")} />
+          <h2 className="mt-4 text-2xl font-bold text-[var(--foreground)]">Session terminée</h2>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">{getRankLabel(accuracy)}</p>
+          <p className="mt-4 text-4xl font-black text-[var(--primary)]">{scorePoints} pts</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
             {correctCount}/{questions.length} bonnes réponses ({accuracy}%)
           </p>
         </div>
 
         {isRankedMode ? (
-          <div className="game-panel animate-in-up rounded-[1.4rem] border border-[#e0cf97] bg-[linear-gradient(150deg,#fff9ea,#f9f2dc)] p-4" style={{ animationDelay: "70ms" }}>
-            <p className="inline-flex items-center gap-1 rounded-full border border-[#dac384] bg-[#fff5d8] px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#775512]">
+          <div className="game-panel animate-in-up rounded-[1.4rem] border border-[var(--line-strong)] bg-[var(--surface-soft)] p-4" style={{ animationDelay: "70ms" }}>
+            <p className="inline-flex items-center gap-1 rounded-full border border-[var(--line-strong)] bg-[rgba(245,158,11,0.16)] px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-amber-300">
               <Swords size={12} />
               Résultat classé
             </p>
 
             {rankedError ? (
-              <p className="mt-2 text-sm text-[#8b3e3e]">{rankedError}</p>
+              <p className="mt-2 text-sm text-red-300">{rankedError}</p>
             ) : rankedUpdates.length === 0 ? (
-              <p className="mt-2 text-sm text-[#6b5a3c]">Synchronisation du classement en cours.</p>
+              <p className="mt-2 text-sm text-[var(--text-muted)]">Synchronisation du classement en cours.</p>
             ) : (
               <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
                 {rankedUpdates.map((update) => {
@@ -546,16 +546,16 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
                       : `Catégorie · ${update.scopeKey}`;
 
                   return (
-                    <div key={`${update.scopeType}-${update.scopeKey}`} className="rounded-[1rem] border border-[#decc9a] bg-white/78 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.07em] text-[#7a6130]">{scopeTitle}</p>
+                    <div key={`${update.scopeType}-${update.scopeKey}`} className="rounded-[1rem] border border-[var(--line)] bg-[var(--surface)] p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.07em] text-[var(--text-muted)]">{scopeTitle}</p>
                       <div className="mt-1 flex items-baseline justify-between gap-2">
-                        <p className="text-xl font-black text-[#24384f]">{update.after} RP</p>
+                        <p className="text-xl font-black text-[var(--foreground)]">{update.after} RP</p>
                         <p className={clsx("text-sm font-bold", update.delta >= 0 ? "text-emerald-700" : "text-rose-700")}>
                           {update.delta >= 0 ? `+${update.delta}` : update.delta}
                         </p>
                       </div>
-                      <p className="mt-1 text-xs text-[#6a5d42]">Rang actuel: {tier.label}</p>
-                      <p className="mt-0.5 text-xs text-[#6a5d42]">
+                      <p className="mt-1 text-xs text-[var(--text-muted)]">Rang actuel: {tier.label}</p>
+                      <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                         {nextTier ? `Prochain palier ${nextTier.label}: ${Math.max(0, nextTier.minPoints - update.after)} RP` : "Palier maximum atteint"}
                       </p>
                     </div>
@@ -567,31 +567,31 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
         ) : null}
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <div className="game-panel rounded-[1.2rem] border border-[#c6d8e8] p-4 text-center">
-            <p className="text-2xl font-bold text-[#102c43]">{scorePoints}</p>
-            <p className="text-xs text-[#618299]">Points</p>
+          <div className="game-panel rounded-[1.2rem] border border-[var(--line)] p-4 text-center">
+            <p className="text-2xl font-bold text-[var(--foreground)]">{scorePoints}</p>
+            <p className="text-xs text-[var(--text-muted)]">Points</p>
           </div>
-          <div className="game-panel rounded-[1.2rem] border border-[#c6d8e8] p-4 text-center">
-            <p className="text-2xl font-bold text-[#102c43]">{accuracy}%</p>
-            <p className="text-xs text-[#618299]">Précision</p>
+          <div className="game-panel rounded-[1.2rem] border border-[var(--line)] p-4 text-center">
+            <p className="text-2xl font-bold text-[var(--foreground)]">{accuracy}%</p>
+            <p className="text-xs text-[var(--text-muted)]">Précision</p>
           </div>
-          <div className="game-panel rounded-[1.2rem] border border-[#c6d8e8] p-4 text-center">
-            <p className="text-2xl font-bold text-[#102c43]">{bestStreak}</p>
-            <p className="text-xs text-[#618299]">Meilleure série</p>
+          <div className="game-panel rounded-[1.2rem] border border-[var(--line)] p-4 text-center">
+            <p className="text-2xl font-bold text-[var(--foreground)]">{bestStreak}</p>
+            <p className="text-xs text-[var(--text-muted)]">Meilleure série</p>
           </div>
-          <div className="game-panel rounded-[1.2rem] border border-[#c6d8e8] p-4 text-center">
-            <p className="text-2xl font-bold text-[#102c43]">{avgReaction}s</p>
-            <p className="text-xs text-[#618299]">Réaction moyenne</p>
+          <div className="game-panel rounded-[1.2rem] border border-[var(--line)] p-4 text-center">
+            <p className="text-2xl font-bold text-[var(--foreground)]">{avgReaction}s</p>
+            <p className="text-xs text-[var(--text-muted)]">Réaction moyenne</p>
           </div>
         </div>
 
-        <div className="game-panel rounded-[1.4rem] border border-[#c6d8e8] p-4 text-sm text-[#4f7088]">
+        <div className="game-panel rounded-[1.4rem] border border-[var(--line)] bg-[var(--surface-soft)] p-4 text-sm text-[var(--text-muted)]">
           <p>
             Temps expiré sur {timeouts} question{timeouts !== 1 ? "s" : ""}. Continue à viser la précision d&apos;abord, puis la vitesse.
           </p>
         </div>
 
-        <div className="game-panel divide-y divide-[#d7e5f1] overflow-hidden rounded-[1.4rem] border border-[#c6d8e8] text-left">
+        <div className="game-panel divide-y divide-[var(--line)] overflow-hidden rounded-[1.4rem] border border-[var(--line)] text-left">
           {questions.map((question, index) => {
             const answer = answers[index];
             const selected = answer?.answerId ? answerLookup.get(answer.answerId) : null;
@@ -606,12 +606,12 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
                     <XCircle size={16} className="mt-0.5 shrink-0 text-rose-600" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#18384f]">{index + 1}. {question.question_text}</p>
-                    <p className="mt-1 text-xs text-[#53758d]">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">{index + 1}. {question.question_text}</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">
                       Ton choix: {selected?.answer_text ?? "Aucune réponse"}
                     </p>
-                    <p className="mt-0.5 text-xs text-[#2f6e4e]">Bonne réponse: {correct?.answer_text ?? "-"}</p>
-                    <p className="mt-0.5 text-xs text-[#53758d]">+{answer?.points ?? 0} pts</p>
+                    <p className="mt-0.5 text-xs text-emerald-300">Bonne réponse: {correct?.answer_text ?? "-"}</p>
+                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">+{answer?.points ?? 0} pts</p>
                   </div>
                 </div>
               </div>
@@ -633,13 +633,13 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
-      <div className="game-panel animate-in-up rounded-[1.4rem] border border-[#c6d8e8] p-4">
+      <div className="game-panel animate-in-up rounded-[1.4rem] border border-[var(--line)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Link href={`/quizzes/${id}`} className="rounded-[0.9rem] border border-[#c5d6e8] bg-white/86 p-2 text-[#58728a] transition hover:border-[#95b7d3] hover:text-[#11354f]">
+            <Link href={`/quizzes/${id}`} className="rounded-[0.9rem] border border-[var(--line)] bg-[var(--surface-soft)] p-2 text-[var(--text-muted)] transition hover:border-[var(--line-strong)] hover:text-[var(--foreground)]">
               <ArrowLeft size={20} />
             </Link>
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#c9d9e8] bg-white/88 px-2.5 py-1 text-xs font-semibold text-[#4d6f87]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--text-muted)]">
               <ListChecks size={12} />
               Question {currentIndex + 1}/{questions.length}
             </span>
@@ -647,16 +647,16 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
 
           <div className="flex items-center gap-2">
             {isRankedMode ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#dfc483] bg-[#fdf2d0] px-2.5 py-1 text-xs font-semibold text-[#7a5b1b]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[var(--line-strong)] bg-[rgba(245,158,11,0.16)] px-2.5 py-1 text-xs font-semibold text-amber-300">
                 <Swords size={12} />
                 Classé · {rankedScopeLabel}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#c9d9e8] bg-white/88 px-2.5 py-1 text-xs font-semibold text-[#4d6f87]">
-              <Flame size={12} className={streak > 0 ? "text-[#de5d5d]" : "text-[#9ab0c2]"} />
+            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--text-muted)]">
+              <Flame size={12} className={streak > 0 ? "text-rose-300" : "text-[var(--text-muted)]"} />
               Série {streak}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#bcd6e8] bg-[#e8f3fb] px-2.5 py-1 text-xs font-semibold text-[#1f5f84]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--line-strong)] bg-[rgba(0,255,255,0.12)] px-2.5 py-1 text-xs font-semibold text-[var(--secondary)]">
               {scorePoints} pts
             </span>
           </div>
@@ -664,21 +664,21 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-semibold text-[#53748c]">
+        <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-muted)]">
           <span className="inline-flex items-center gap-1"><Clock3 size={12} /> Temps restant</span>
           <span>{countdownActive ? `Prêt dans ${countdown > 0 ? countdown : "GO"}` : `${timerSeconds}s`}</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-[#d7e5f1]">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--line)]">
           <div
             className={clsx(
               "h-2 rounded-full transition-all",
               countdownActive
                 ? "bg-[linear-gradient(90deg,#b7cde0,#95b7d8)]"
                 : timerRatio > 0.5
-                ? "bg-[linear-gradient(90deg,#22a56a,#6dcf95)]"
-                : timerRatio > 0.22
-                  ? "bg-[linear-gradient(90deg,#e9ad3f,#d98b1f)]"
-                  : "bg-[linear-gradient(90deg,#df576c,#bb3048)]"
+                  ? "bg-[linear-gradient(90deg,#22a56a,#6dcf95)]"
+                  : timerRatio > 0.22
+                    ? "bg-[linear-gradient(90deg,#e9ad3f,#d98b1f)]"
+                    : "bg-[linear-gradient(90deg,#df576c,#bb3048)]"
             )}
             style={{ width: `${(countdownActive ? 1 : timerRatio) * 100}%` }}
           />
@@ -693,13 +693,13 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.24 }}
-            className="game-panel rounded-[1rem] border border-[#c7d9e9] p-3"
+            className="game-panel rounded-[1rem] border border-[var(--line)] p-3"
           >
-            <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-[#53748c]">
+            <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-[var(--text-muted)]">
               <span>Momentum</span>
               <span>{streak}/8</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[#d7e5f1]">
+            <div className="h-2 overflow-hidden rounded-full bg-[var(--line)]">
               <motion.div
                 className="h-2 rounded-full bg-[linear-gradient(90deg,#df576c,#1f6f9d)]"
                 initial={{ width: 0 }}
@@ -708,7 +708,7 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
               />
             </div>
             {streakLabel ? (
-              <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#1f5f84]">{streakLabel}</p>
+              <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--secondary)]">{streakLabel}</p>
             ) : null}
           </motion.div>
         )}
@@ -721,37 +721,37 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
         transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-4"
       >
-        <div className="game-panel rounded-[1.6rem] border border-[#c6d8e8] p-5 text-center lg:p-7">
+        <div className="game-panel rounded-[1.6rem] border border-[var(--line)] p-5 text-center lg:p-7">
           {currentQuestion.image_url && (
             <Image
               src={currentQuestion.image_url}
               alt="Illustration de la question"
               width={960}
               height={560}
-              className="mx-auto mb-4 max-h-56 rounded-xl border border-[#c6d8e8] object-contain"
+              className="mx-auto mb-4 max-h-56 rounded-xl border border-[var(--line)] object-contain"
             />
           )}
-          <p className="text-xl font-bold text-[#102c43] lg:text-2xl">{currentQuestion.question_text}</p>
+          <p className="text-xl font-bold text-[var(--foreground)] lg:text-2xl">{currentQuestion.question_text}</p>
         </div>
 
         {countdownActive ? (
-          <div className="countdown-stage game-panel relative overflow-hidden rounded-[1.6rem] border border-[#c6d8e8] p-8 text-center lg:p-10">
+          <div className="countdown-stage game-panel relative overflow-hidden rounded-[1.6rem] border border-[var(--line)] p-8 text-center lg:p-10">
             <div className="countdown-fx-ring" />
             <div className="countdown-fx-orb countdown-fx-orb-a" />
             <div className="countdown-fx-orb countdown-fx-orb-b" />
             <div className="countdown-fx-orb countdown-fx-orb-c" />
 
-            <p className="relative z-10 text-xs font-bold uppercase tracking-[0.12em] text-[#6d8aa1]">Reponses verrouillees</p>
+            <p className="relative z-10 text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">Reponses verrouillees</p>
             <motion.p
               key={countdown}
               initial={{ opacity: 0, scale: 0.82, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 mt-2 text-6xl font-black text-[#1f6f9d] lg:text-7xl"
+              className="relative z-10 mt-2 text-6xl font-black text-[var(--secondary)] lg:text-7xl"
             >
               {countdown > 0 ? countdown : "GO"}
             </motion.p>
-            <p className="relative z-10 mt-2 text-sm text-[#5a7b92]">Lis la question, puis clique ta reponse a GO.</p>
+            <p className="relative z-10 mt-2 text-sm text-[var(--text-muted)]">Lis la question, puis clique ta reponse a GO.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -765,14 +765,14 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
               let style = `border ${theme.idle}`;
               if (answered) {
                 if (revealCorrect) {
-                  style = "border-2 border-emerald-400 bg-[linear-gradient(135deg,#ecfbf3,#d7f3e4)] text-[#1f6c49]";
+                  style = "border-2 border-emerald-400 bg-[linear-gradient(135deg,rgba(16,185,129,.22),rgba(6,78,59,.34))] text-emerald-100";
                 } else if (revealWrongSelected) {
-                  style = "border-2 border-rose-400 bg-[linear-gradient(135deg,#fff1f4,#ffe2e8)] text-[#912b3e]";
+                  style = "border-2 border-rose-400 bg-[linear-gradient(135deg,rgba(244,63,94,.2),rgba(127,29,29,.3))] text-rose-100";
                 } else {
-                  style = "border border-[#d5e3ef] bg-white/80 text-[#6b8aa0] opacity-70";
+                  style = "border border-[var(--line)] bg-[var(--surface-soft)] text-[var(--text-muted)] opacity-80";
                 }
               } else if (isSelected) {
-                style = `${theme.idle} ring-4 ring-[#9dc3e4]/55`;
+                style = `${theme.idle} ring-4 ring-cyan-400/35`;
               }
 
               return (
@@ -788,13 +788,13 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
                   <div className="flex items-start gap-3">
                     <span className={clsx(
                       "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-black",
-                      answered ? "bg-white/70 text-[#24445f]" : "bg-white/25 text-white"
+                      answered ? "bg-[var(--surface)] text-[var(--foreground)]" : "bg-black/25 text-white"
                     )}>
                       {theme.key}
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold lg:text-base">{answer.answer_text}</p>
-                      <p className={clsx("mt-1 text-[11px]", answered ? "text-[#5f7f97]" : "text-white/85")}>Clique pour choisir</p>
+                      <p className={clsx("mt-1 text-[11px]", answered ? "text-[var(--text-muted)]" : "text-white/85")}>Clique pour choisir</p>
                     </div>
                   </div>
                 </button>
@@ -812,15 +812,15 @@ export default function PlayQuizPage({ params }: { params: Promise<{ id: string 
               className={clsx(
                 "game-panel rounded-[1.2rem] border p-4",
                 currentOutcome?.correct
-                  ? "border-emerald-300 bg-[linear-gradient(160deg,#ecfbf3,#dff6ea)]"
-                  : "border-rose-300 bg-[linear-gradient(160deg,#fff3f5,#ffe8ed)]"
+                  ? "border-emerald-400 bg-[linear-gradient(160deg,rgba(16,185,129,.18),rgba(6,78,59,.3))]"
+                  : "border-rose-400 bg-[linear-gradient(160deg,rgba(244,63,94,.16),rgba(127,29,29,.28))]"
               )}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className={clsx("text-sm font-bold", currentOutcome?.correct ? "text-[#1f6c49]" : "text-[#8f2e42]")}>
+                <p className={clsx("text-sm font-bold", currentOutcome?.correct ? "text-emerald-200" : "text-rose-200")}>
                   {currentOutcome?.correct ? "Bonne réponse" : currentOutcome?.timedOut ? "Temps écoulé" : "Mauvaise réponse"}
                 </p>
-                <p className="text-sm font-black text-[#1f5f84]">+{roundGain} pts</p>
+                <p className="text-sm font-black text-[var(--primary)]">+{roundGain} pts</p>
               </div>
             </motion.div>
           )}

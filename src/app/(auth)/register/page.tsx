@@ -49,23 +49,23 @@ export default function RegisterPage() {
       <div className="animate-float-slow pointer-events-none absolute -left-24 bottom-10 h-64 w-64 rounded-full bg-[#1bbfcf]/20 blur-3xl" />
       <div className="animate-float-slow pointer-events-none absolute -right-20 top-12 h-64 w-64 rounded-full bg-[#0f7a83]/18 blur-3xl" />
 
-      <div className="game-panel animate-in-up relative w-full max-w-xl rounded-[2.05rem] border border-[#c6d8e8] p-8 sm:p-10">
+      <div className="game-panel animate-in-up relative w-full max-w-xl rounded-[2.05rem] border border-[var(--line)] p-8 sm:p-10">
         <div className="mb-8 text-center">
           <FlashMasterLogo size="lg" className="mx-auto justify-center" />
-          <p className="mt-4 text-sm text-[#466983]">
+          <p className="mt-4 text-sm text-[var(--text-muted)]">
             Crée ton compte et active ton tableau de progression.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="rounded-[1rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="rounded-[1rem] border border-red-400/50 bg-red-500/15 px-4 py-3 text-sm text-red-200">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="displayName" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#375d7b]">
+            <label htmlFor="displayName" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
               Nom d&apos;affichage
             </label>
             <input
@@ -74,13 +74,13 @@ export default function RegisterPage() {
               required
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-[1rem] border border-[#c5d6e8] bg-white/92 px-4 py-2.5 text-sm text-[#102c43] outline-none transition placeholder:text-[#7892a8] focus:border-[#0f7a83] focus:ring-4 focus:ring-[#0f7a83]/15"
+              className="w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2.5 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--line-strong)] focus:ring-4 focus:ring-cyan-400/20"
               placeholder="Votre nom"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#375d7b]">
+            <label htmlFor="email" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
               Email
             </label>
             <input
@@ -89,13 +89,13 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-[1rem] border border-[#c5d6e8] bg-white/92 px-4 py-2.5 text-sm text-[#102c43] outline-none transition placeholder:text-[#7892a8] focus:border-[#0f7a83] focus:ring-4 focus:ring-[#0f7a83]/15"
+              className="w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2.5 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--line-strong)] focus:ring-4 focus:ring-cyan-400/20"
               placeholder="vous@exemple.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#375d7b]">
+            <label htmlFor="password" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
               Mot de passe
             </label>
             <div className="relative">
@@ -106,13 +106,13 @@ export default function RegisterPage() {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-[1rem] border border-[#c5d6e8] bg-white/92 px-4 py-2.5 pr-10 text-sm text-[#102c43] outline-none transition placeholder:text-[#7892a8] focus:border-[#0f7a83] focus:ring-4 focus:ring-[#0f7a83]/15"
+                className="w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2.5 pr-10 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--line-strong)] focus:ring-4 focus:ring-cyan-400/20"
                 placeholder="Minimum 6 caracteres"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6f879d] hover:text-[#0f7a83]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--foreground)]"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -131,9 +131,9 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-[#47757c]">
+        <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
           Déjà un compte ?{" "}
-          <Link href="/login" className="font-bold text-[#0f7a83] hover:text-[#0b5f66]">
+          <Link href="/login" className="font-bold text-[var(--secondary)] hover:text-[var(--primary)]">
             Se connecter
           </Link>
         </p>

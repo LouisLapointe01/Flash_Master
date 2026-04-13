@@ -20,7 +20,7 @@ const navItems = [
   { href: "/dashboard", label: "ACCUEIL", icon: HudHomeIcon },
   { href: "/training", label: "ENTRAINEMENT", icon: HudDeckIcon },
   { href: "/ranked", label: "RANKED", icon: HudQuizIcon },
-  { href: "/social", label: "DUEL & AMIS", icon: HudSuggestIcon },
+  { href: "/social", label: "ESCOUADE", icon: HudSuggestIcon },
   { href: "/stats", label: "STATS", icon: HudStatsIcon },
   { href: "/settings", label: "REGLAGES", icon: HudCogIcon },
 ];

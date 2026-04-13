@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Topbar } from "./topbar";
 import { PageTransition } from "./page-transition";
+import { PrecisionCursor } from "./precision-cursor";
 
 interface DashboardShellProps {
   displayName: string;
@@ -16,6 +17,7 @@ export function DashboardShell({ displayName, children }: DashboardShellProps) {
   if (inArenaMode) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-black">
+        <PrecisionCursor />
         <main className="relative z-10 min-h-screen">
           <PageTransition>{children}</PageTransition>
         </main>
@@ -25,6 +27,7 @@ export function DashboardShell({ displayName, children }: DashboardShellProps) {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-50">
+      <PrecisionCursor />
       <div className="relative z-10 flex min-h-screen min-w-0 flex-col">
         <Topbar displayName={displayName} />
         <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4 lg:px-8 lg:pb-12 lg:pt-6">

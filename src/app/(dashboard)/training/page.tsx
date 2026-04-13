@@ -1,11 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getUserPremiumStatus } from "@/lib/actions/action-points";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { buildTrainingScopeOptions, type TrainingQuizSource } from "@/lib/utils/training";
-import { Layers, Play, Target } from "lucide-react";
-
-export const dynamic = "force-dynamic";
+import { TrainingLaunchHub, type TrainingHotspot } from "@/components/training/training-launch-hub";
 
 type QuizRow = {
   id: string;
@@ -14,24 +10,97 @@ type QuizRow = {
   quiz_questions?: Array<{ count: number }>;
 };
 
+type SessionQuiz = {
+  category: string | null;
+  category_path: string[];
+};
+
+type QuizSessionRow = {
+  score: number;
+  total_questions: number;
+  quizzes?: SessionQuiz | SessionQuiz[] | null;
+};
+
+function getSessionCategoryPath(session: QuizSessionRow) {
+  const quiz = Array.isArray(session.quizzes) ? session.quizzes[0] : session.quizzes;
+  const path = quiz?.category_path ?? [];
+
+  if (Array.isArray(path) && path.length > 0) {
+    return path.map((item) => item.trim()).filter(Boolean);
+  }
+
+  if (quiz?.category?.trim()) return [quiz.category.trim()];
+  return [] as string[];
+}
+
+function buildHotspots(sessions: QuizSessionRow[], scopes: ReturnType<typeof buildTrainingScopeOptions>) {
+  const scoreByScope = new Map<string, { label: string; mistakes: number; sessions: number }>();
+
+  for (const session of sessions) {
+    const mistakes = Math.max(0, (session.total_questions ?? 0) - (session.score ?? 0));
+    if (mistakes <= 0) continue;
+
+    const path = getSessionCategoryPath(session);
+    if (path.length === 0) continue;
+
+    for (let depth = 1; depth <= path.length; depth += 1) {
+      const label = path.slice(0, depth).join(" > ");
+      const key = label.toLowerCase();
+      const existing = scoreByScope.get(key) ?? { label, mistakes: 0, sessions: 0 };
+      existing.mistakes += mistakes;
+      existing.sessions += 1;
+      scoreByScope.set(key, existing);
+    }
+  }
+
+  const scopeByKey = new Map(scopes.map((scope) => [scope.key, scope]));
+
+  return Array.from(scoreByScope.entries())
+    .map(([key, value]) => {
+      const scope = scopeByKey.get(key);
+      return {
+        key,
+        label: value.label,
+        mistakes: value.mistakes,
+        sessions: value.sessions,
+        questionCount: scope?.questionCount ?? 0,
+        quizCount: scope?.quizCount ?? 0,
+        sampleQuizId: scope?.sampleQuizId ?? null,
+      };
+    })
+    .sort((a, b) => b.mistakes - a.mistakes || b.sessions - a.sessions)
+    .slice(0, 8) as TrainingHotspot[];
+}
+
+export const dynamic = "force-dynamic";
+
 export default async function TrainingPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   const premiumStatus = await getUserPremiumStatus();
   const isPremium = premiumStatus?.isPremium ?? false;
   const actionBalance = premiumStatus?.actionPoints?.balance ?? 0;
-  const canLaunchTraining = true; // throttling désactivé temporairement
+  const canLaunchTraining = true; // throttling desactive temporairement
 
-  const { data } = await supabase
-    .from("quizzes")
-    .select("id, category, category_path, quiz_questions(count), visibility, owner_id")
-    .or(`visibility.eq.public,owner_id.eq.${user?.id ?? ""}`)
-    .order("updated_at", { ascending: false })
-    .limit(200);
+  const [{ data: quizData }, { data: sessionsData }] = await Promise.all([
+    supabase
+      .from("quizzes")
+      .select("id, category, category_path, quiz_questions(count), visibility, owner_id")
+      .or(`visibility.eq.public,owner_id.eq.${user?.id ?? ""}`)
+      .order("updated_at", { ascending: false })
+      .limit(300),
+    supabase
+      .from("quiz_sessions")
+      .select("score, total_questions, quizzes(category, category_path)")
+      .eq("user_id", user?.id ?? "")
+      .order("completed_at", { ascending: false })
+      .limit(140),
+  ]);
 
-  const quizzes = ((data as QuizRow[]) ?? []).map((quiz) => ({
+  const quizzes = ((quizData as QuizRow[]) ?? []).map((quiz) => ({
     id: quiz.id,
     category: quiz.category,
     category_path: quiz.category_path,
@@ -39,71 +108,21 @@ export default async function TrainingPage() {
   })) as TrainingQuizSource[];
 
   const scopes = buildTrainingScopeOptions(quizzes);
+  const hotspots = buildHotspots((sessionsData as QuizSessionRow[]) ?? [], scopes);
 
   return (
     <div className="space-y-5">
-      <section className="game-panel animate-in-up p-5 lg:p-6">
-        <p className="hud-chip">Mode entrainement</p>
-        <h1 className="page-title mt-3">Entrainement</h1>
-        <p className="mt-2 max-w-3xl text-sm text-[var(--text-muted)]">
-          Choisis un scope de revision (global, categorie, sous-categorie) et lance une manche. Chaque ligne affiche le volume disponible.
-        </p>
+      <section className="game-panel precision-hud-panel animate-in-up p-5 lg:p-6">
+        <p className="hud-chip">Training</p>
+        <h1 className="page-title mt-2">Precision Lab</h1>
         {!isPremium ? (
           <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
             ⚡ Points d&apos;action restants: {actionBalance}
           </p>
         ) : null}
-        {!isPremium && !canLaunchTraining ? (
-          <p className="mt-2 text-sm text-[#a34d4d]">
-            Solde epuise: impossible de lancer une manche training pour le moment.
-          </p>
-        ) : null}
       </section>
 
-      <section className="game-panel p-4 lg:p-5">
-        {scopes.length === 0 ? (
-          <div className="py-12 text-center">
-            <Layers size={40} className="mx-auto text-cyan-300" />
-            <p className="mt-3 text-sm text-[var(--text-muted)]">Aucune question disponible pour l&apos;entrainement.</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {scopes.map((scope) => (
-              <article
-                key={scope.key}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-[0.9rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3"
-              >
-                <div style={{ paddingLeft: `${scope.depth * 0.75}rem` }} className="min-w-0">
-                  <p className="truncate font-mono text-sm font-black uppercase tracking-[0.07em] text-[var(--foreground)]">
-                    {scope.label}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {scope.questionCount} questions · {scope.quizCount} quiz
-                  </p>
-                </div>
-
-                {scope.sampleQuizId ? (
-                  canLaunchTraining ? (
-                    <Link href={`/quizzes/${scope.sampleQuizId}/play?mode=training&scope=${encodeURIComponent(scope.key)}`}>
-                      <Button size="sm">
-                        <Play size={14} /> Lancer
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Button size="sm" variant="secondary" disabled title="Points d'action insuffisants">
-                      <Play size={14} /> Points insuffisants
-                    </Button>
-                  )
-                ) : (
-                  <Button size="sm" variant="secondary" disabled>
-                    <Target size={14} /> Indisponible
-                  </Button>
-                )}
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+      <TrainingLaunchHub scopes={scopes} hotspots={hotspots} canLaunchTraining={canLaunchTraining} />
     </div>
   );
 }

@@ -94,7 +94,7 @@ export function QuizCard({ quiz, onDelete }: QuizCardProps) {
               {onDelete && (
                 <button
                   onClick={() => { onDelete(quiz.id); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-300 hover:bg-red-500/15"
                 >
                   <Trash2 size={14} /> Supprimer
                 </button>

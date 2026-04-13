@@ -61,30 +61,30 @@ export default function LoginPage() {
         }}
       />
 
-      <div className="game-panel animate-in-up relative w-full max-w-xl rounded-[2.05rem] border border-[#c6d8e8] p-8 sm:p-10">
+      <div className="game-panel animate-in-up relative w-full max-w-xl rounded-[2.05rem] border border-[var(--line)] p-8 sm:p-10">
         <div className="mb-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <FlashMasterLogo size="lg" />
             <span className="hud-chip">Acces joueur</span>
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-[#1c3452] sm:text-3xl">Entre dans l&apos;arene d&apos;apprentissage</h1>
-          <p className="mt-2 text-sm text-[#496682]">Connecte-toi pour reprendre ta progression, tes runs et tes modes classes.</p>
+          <h1 className="mt-4 text-2xl font-semibold text-[var(--foreground)] sm:text-3xl">Entre dans l&apos;arene d&apos;apprentissage</h1>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">Connecte-toi pour reprendre ta progression, tes runs et tes modes classes.</p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-[11px]">
-            <p className="rounded-full border border-[#c7daec] bg-white/84 px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[#4f6c89]">Decks</p>
-            <p className="rounded-full border border-[#c7daec] bg-white/84 px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[#4f6c89]">Quiz</p>
-            <p className="rounded-full border border-[#c7daec] bg-white/84 px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[#4f6c89]">Classe</p>
+            <p className="rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Decks</p>
+            <p className="rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Quiz</p>
+            <p className="rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2 py-1 text-center font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Classe</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="rounded-[1rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="rounded-[1rem] border border-red-400/50 bg-red-500/15 px-4 py-3 text-sm text-red-200">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#375d7b]">
+            <label htmlFor="email" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
               Email
             </label>
             <input
@@ -93,13 +93,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-[1rem] border border-[#c5d6e8] bg-white/92 px-4 py-2.5 text-sm text-[#102c43] outline-none transition placeholder:text-[#7892a8] focus:border-[#0f7a83] focus:ring-4 focus:ring-[#0f7a83]/15"
+              className="w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2.5 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--line-strong)] focus:ring-4 focus:ring-cyan-400/20"
               placeholder="vous@exemple.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[#375d7b]">
+            <label htmlFor="password" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
               Mot de passe
             </label>
             <div className="relative">
@@ -109,13 +109,13 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-[1rem] border border-[#c5d6e8] bg-white/92 px-4 py-2.5 pr-10 text-sm text-[#102c43] outline-none transition placeholder:text-[#7892a8] focus:border-[#0f7a83] focus:ring-4 focus:ring-[#0f7a83]/15"
+                className="w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2.5 pr-10 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--line-strong)] focus:ring-4 focus:ring-cyan-400/20"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6f879d] hover:text-[#0f7a83]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--foreground)]"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -123,7 +123,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-right">
-            <Link href="/forgot-password" className="text-sm font-semibold text-[#0f7a83] hover:text-[#0b5f66]">
+            <Link href="/forgot-password" className="text-sm font-semibold text-[var(--secondary)] hover:text-[var(--primary)]">
               Mot de passe oublié ?
             </Link>
           </div>
@@ -141,14 +141,14 @@ export default function LoginPage() {
         </form>
 
         <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[#d3e1ef]" />
-          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#7c93a7]">ou</span>
-          <div className="h-px flex-1 bg-[#d3e1ef]" />
+          <div className="h-px flex-1 bg-[var(--line)]" />
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">ou</span>
+          <div className="h-px flex-1 bg-[var(--line)]" />
         </div>
 
         <button
           onClick={handleDemo}
-          className="w-full rounded-[1rem] border border-[#c5d6e8] bg-white/88 py-3 font-semibold text-[#193750] transition hover:-translate-y-[1px] hover:border-[#95b7d3] hover:bg-white"
+          className="w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-soft)] py-3 font-semibold text-[var(--foreground)] transition hover:-translate-y-[1px] hover:border-[var(--line-strong)]"
         >
           <span className="inline-flex items-center gap-2">
             <Play size={18} />
@@ -156,9 +156,9 @@ export default function LoginPage() {
           </span>
         </button>
 
-        <p className="mt-6 text-center text-sm text-[#47757c]">
+        <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
           Pas encore de compte ?{" "}
-          <Link href="/register" className="font-bold text-[#0f7a83] hover:text-[#0b5f66]">
+          <Link href="/register" className="font-bold text-[var(--secondary)] hover:text-[var(--primary)]">
             Créer un profil joueur
           </Link>
         </p>

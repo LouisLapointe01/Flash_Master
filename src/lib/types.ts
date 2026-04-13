@@ -7,6 +7,8 @@ export type LobbyMode = "ranked" | "training";
 export type LobbyStatus = "forming" | "countdown" | "in_progress" | "paused" | "finished" | "cancelled";
 export type MatchmakingStatus = "searching" | "matched" | "cancelled";
 export type FriendshipStatus = "pending" | "accepted" | "rejected";
+export type PresenceStatus = "online" | "dnd" | "offline";
+export type LobbyInvitationStatus = "pending" | "accepted" | "declined" | "expired" | "cancelled";
 export type ReviewAction = "like" | "dislike" | "modify";
 export type ReviewQueueStatus = "pending" | "approved" | "rejected";
 
@@ -245,6 +247,28 @@ export interface Friendship {
   updated_at: string;
   requester?: Profile;
   addressee?: Profile;
+}
+
+export interface UserPresence {
+  user_id: string;
+  status: PresenceStatus;
+  last_seen_at: string;
+  updated_at: string;
+}
+
+export interface LobbyInvitation {
+  id: string;
+  lobby_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: LobbyInvitationStatus;
+  note: string;
+  created_at: string;
+  updated_at: string;
+  responded_at: string | null;
+  inviter?: Profile;
+  invitee?: Profile;
+  game_lobbies?: GameLobby;
 }
 
 export interface Association {

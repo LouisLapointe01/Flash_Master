@@ -2,25 +2,17 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { clsx } from "clsx";
-import { Flame, Loader2, Medal, Swords, Target, Trophy } from "lucide-react";
-import {
-  DEFAULT_LOBBY_MAX_PLAYERS,
-  TARGET_MATCH_DURATION_SECONDS,
-  normalizeCategoryScope,
-} from "@/lib/utils/ranked";
+import { Loader2, Swords, Target } from "lucide-react";
+import { TARGET_MATCH_DURATION_SECONDS, normalizeCategoryScope } from "@/lib/utils/ranked";
 
 type QuizWithCount = {
   id: string;
-  title: string;
-  description: string;
   category: string;
   category_path: string[];
-  visibility: string;
-  quiz_questions?: Array<{ count: number }>;
-  profiles?: Array<{ display_name: string }>;
 };
 
 type QueueRow = {
@@ -41,50 +33,121 @@ type QueueRpcResponse = {
   scope_key?: string;
 };
 
-function getQuestionCount(quiz: QuizWithCount) {
-  if (!Array.isArray(quiz.quiz_questions) || quiz.quiz_questions.length === 0) return 0;
-  const first = quiz.quiz_questions[0] as { count?: number };
-  return first.count ?? 0;
+type QueueMode = "solo_q" | "duo_q" | "flex";
+
+type QueueConfig = {
+  key: QueueMode;
+  label: string;
+  subtitle: string;
+  partySlots: number;
+  maxPlayers: number;
+};
+
+const RANKED_QUEUES: QueueConfig[] = [
+  {
+    key: "solo_q",
+    label: "Solo Q",
+    subtitle: "1v1",
+    partySlots: 1,
+    maxPlayers: 2,
+  },
+  {
+    key: "duo_q",
+    label: "Duo Q",
+    subtitle: "2v2",
+    partySlots: 2,
+    maxPlayers: 4,
+  },
+  {
+    key: "flex",
+    label: "Flex 5v5",
+    subtitle: "5v5",
+    partySlots: 5,
+    maxPlayers: 10,
+  },
+];
+
+function parseQueueMode(value: string | null | undefined): QueueMode {
+  if (value === "duo_q" || value === "flex") return value;
+  return "solo_q";
+}
+
+function getQueueConfig(queueMode: QueueMode) {
+  return RANKED_QUEUES.find((queue) => queue.key === queueMode) ?? RANKED_QUEUES[0];
+}
+
+function encodeQueueScopeKey(baseScopeKey: string, queueMode: QueueMode) {
+  return `q:${queueMode}|${baseScopeKey}`;
+}
+
+function decodeQueueScopeKey(scopeKey: string) {
+  const normalized = scopeKey.trim().toLowerCase();
+  const queueMatch = normalized.match(/^q:(solo_q|duo_q|flex)\|(.*)$/);
+
+  if (!queueMatch) {
+    return {
+      queueMode: "solo_q" as QueueMode,
+      baseScopeKey: normalized || "general",
+    };
+  }
+
+  return {
+    queueMode: parseQueueMode(queueMatch[1]),
+    baseScopeKey: queueMatch[2] || "general",
+  };
 }
 
 export default function RankedPage() {
   const supabase = useMemo(() => createClient(), []);
+  const searchParams = useSearchParams();
+
   const [loading, setLoading] = useState(true);
   const [busyMatchmaking, setBusyMatchmaking] = useState(false);
   const [syncingQueue, setSyncingQueue] = useState(false);
   const [quizzes, setQuizzes] = useState<QuizWithCount[]>([]);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [scopeFilter, setScopeFilter] = useState<string>("all");
+  const [queueMode, setQueueMode] = useState<QueueMode>(parseQueueMode(searchParams.get("queue")));
   const [queueStatus, setQueueStatus] = useState<"idle" | "searching" | "matched">("idle");
   const [queueLobbyId, setQueueLobbyId] = useState<string | null>(null);
   const [queueScopeLabel, setQueueScopeLabel] = useState("general");
   const [queueMessage, setQueueMessage] = useState("");
 
+  useEffect(() => {
+    setQueueMode(parseQueueMode(searchParams.get("queue")));
+  }, [searchParams]);
+
   const applyQueueState = useCallback((activeQueue: QueueRow | null) => {
-    if (activeQueue?.status === "matched") {
-      setQueueStatus("matched");
-      setQueueLobbyId(activeQueue.matched_lobby_id ?? null);
-      setQueueScopeLabel(activeQueue.scope_key);
+    if (!activeQueue) {
+      setQueueStatus("idle");
+      setQueueLobbyId(null);
+      setQueueScopeLabel("general");
       return;
     }
 
-    if (activeQueue?.status === "searching") {
+    const parsedScope = decodeQueueScopeKey(activeQueue.scope_key);
+    setQueueMode(parsedScope.queueMode);
+    setQueueScopeLabel(parsedScope.baseScopeKey);
+
+    if (activeQueue.status === "matched") {
+      setQueueStatus("matched");
+      setQueueLobbyId(activeQueue.matched_lobby_id ?? null);
+      return;
+    }
+
+    if (activeQueue.status === "searching") {
       setQueueStatus("searching");
       setQueueLobbyId(null);
-      setQueueScopeLabel(activeQueue.scope_key);
       return;
     }
 
     setQueueStatus("idle");
     setQueueLobbyId(null);
-    setQueueScopeLabel("general");
   }, []);
 
   const syncQueueState = useCallback(
     async (userId: string, options?: { quiet?: boolean }) => {
-      if (!options?.quiet) {
-        setSyncingQueue(true);
-      }
+      if (!options?.quiet) setSyncingQueue(true);
 
       const { data, error } = await supabase
         .from("ranked_match_queue")
@@ -106,12 +169,10 @@ export default function RankedPage() {
       applyQueueState(activeQueue);
 
       if (activeQueue?.status === "matched") {
-        setQueueMessage("Adversaire trouve. Rejoins le lobby pour preparer la manche.");
+        setQueueMessage("Match trouve. Ouvre le lobby.");
       }
 
-      if (!options?.quiet) {
-        setSyncingQueue(false);
-      }
+      if (!options?.quiet) setSyncingQueue(false);
     },
     [applyQueueState, supabase]
   );
@@ -134,10 +195,10 @@ export default function RankedPage() {
       const [{ data: quizData }, { data: queueData }] = await Promise.all([
         supabase
           .from("quizzes")
-          .select("id, title, description, category, category_path, visibility, quiz_questions(count), profiles(display_name)")
+          .select("id, category, category_path")
           .eq("visibility", "public")
           .order("updated_at", { ascending: false })
-          .limit(60),
+          .limit(160),
         supabase
           .from("ranked_match_queue")
           .select("id, status, matched_lobby_id, scope_type, scope_key, created_at")
@@ -147,11 +208,9 @@ export default function RankedPage() {
           .limit(1),
       ]);
 
-      setQuizzes(((quizData as unknown as QuizWithCount[]) ?? []));
-
+      setQuizzes((quizData as QuizWithCount[]) ?? []);
       const activeQueue = ((queueData as QueueRow[] | null) ?? [])[0] ?? null;
       applyQueueState(activeQueue);
-
       setLoading(false);
     }
 
@@ -165,47 +224,37 @@ export default function RankedPage() {
       void syncQueueState(myUserId, { quiet: true });
     }, 3500);
 
-    return () => {
-      window.clearInterval(intervalId);
-    };
+    return () => window.clearInterval(intervalId);
   }, [myUserId, queueStatus, syncQueueState]);
 
   const scopes = useMemo(() => {
     const fromQuizzes = new Set(
       quizzes
-      .map((quiz) => normalizeCategoryScope(quiz.category_path, quiz.category).toLowerCase())
-      .filter((label) => label !== "general")
+        .map((quiz) => normalizeCategoryScope(quiz.category_path, quiz.category).toLowerCase())
+        .filter((label) => label !== "general")
     );
 
     return Array.from(fromQuizzes).sort((a, b) => a.localeCompare(b));
   }, [quizzes]);
 
-  const filteredQuizzes = useMemo(() => {
-    if (scopeFilter === "all") return quizzes;
-
-    return quizzes.filter((quiz) => {
-      const category = normalizeCategoryScope(quiz.category_path, quiz.category).toLowerCase();
-      return category === scopeFilter;
-    });
-  }, [quizzes, scopeFilter]);
-
   async function handleJoinQueue() {
     if (!myUserId) {
-      setQueueMessage("Session utilisateur introuvable.");
+      setQueueMessage("Session introuvable.");
       return;
     }
 
-    const targetScope = scopeFilter === "all"
-      ? { scopeType: "general", scopeKey: "general" }
-      : { scopeType: "category", scopeKey: scopeFilter };
+    const baseScopeKey = scopeFilter === "all" ? "general" : scopeFilter;
+    const scopeType = scopeFilter === "all" ? "general" : "category";
+    const scopeKey = encodeQueueScopeKey(baseScopeKey, queueMode);
+    const queueConfig = getQueueConfig(queueMode);
 
     setBusyMatchmaking(true);
     setQueueMessage("");
 
     const { data, error } = await supabase.rpc("enqueue_ranked_match", {
-      p_scope_type: targetScope.scopeType,
-      p_scope_key: targetScope.scopeKey,
-      p_max_players: DEFAULT_LOBBY_MAX_PLAYERS,
+      p_scope_type: scopeType,
+      p_scope_key: scopeKey,
+      p_max_players: queueConfig.maxPlayers,
     });
 
     if (error) {
@@ -215,16 +264,16 @@ export default function RankedPage() {
     }
 
     const payload = (data ?? {}) as QueueRpcResponse;
-    setQueueScopeLabel(targetScope.scopeKey);
+    setQueueScopeLabel(baseScopeKey);
 
     if (payload.status === "matched") {
       setQueueStatus("matched");
       setQueueLobbyId(payload.lobby_id ?? null);
-      setQueueMessage("Adversaire trouve. Rejoins le lobby pour preparer la manche.");
+      setQueueMessage("Match trouve. Ouvre le lobby.");
     } else {
       setQueueStatus("searching");
       setQueueLobbyId(null);
-      setQueueMessage("Recherche en cours. En attente d'un joueur de rang compatible.");
+      setQueueMessage(`Recherche ${queueConfig.label}...`);
     }
 
     void syncQueueState(myUserId, { quiet: true });
@@ -233,7 +282,7 @@ export default function RankedPage() {
 
   async function handleCancelQueue() {
     if (!myUserId) {
-      setQueueMessage("Session utilisateur introuvable.");
+      setQueueMessage("Session introuvable.");
       return;
     }
 
@@ -250,7 +299,7 @@ export default function RankedPage() {
     setQueueStatus("idle");
     setQueueLobbyId(null);
     setQueueScopeLabel("general");
-    setQueueMessage("Recherche annulee.");
+    setQueueMessage("File annulee.");
     void syncQueueState(myUserId, { quiet: true });
     setBusyMatchmaking(false);
   }
@@ -258,95 +307,78 @@ export default function RankedPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#1f6f9d]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--secondary)]" />
       </div>
     );
   }
 
   const targetDurationMinutes = Math.round(TARGET_MATCH_DURATION_SECONDS / 60);
+  const queueConfig = getQueueConfig(queueMode);
+  const queueStatusLabel = queueStatus === "idle" ? "Hors file" : queueStatus === "searching" ? "Recherche" : "Match trouve";
 
   return (
-    <div className="space-y-6">
-      <div className="game-panel animate-in-up rounded-[1.5rem] border border-[#d9cfbd] p-5 lg:p-6">
-        <div className="space-y-3">
-          <p className="hud-chip">Ranked Arena</p>
-          <h1 className="page-title mt-1">Mode classe</h1>
-          <p className="text-sm text-[#557893]">Lance la file competitive depuis ici. Les details complets de ton rang sont dans ton profil.</p>
-          <Link href="/settings?view=rank" className="inline-flex rounded-full border border-[#c9d9e8] bg-white/85 px-3 py-1.5 text-xs font-semibold text-[#2f5f84]">
-            Voir Mon rang
-          </Link>
-        </div>
-      </div>
-
-      <div className="game-panel animate-in-up rounded-[1.35rem] border border-[#c6d8e8] p-4" style={{ animationDelay: "70ms" }}>
-        <div className="mb-3 rounded-[0.95rem] border border-[#c9d9e8] bg-white/75 p-3">
-          <p className="text-xs font-bold uppercase tracking-[0.09em] text-[#587790]">Matchmaking</p>
-          <p className="mt-1 text-sm text-[#3f627d]">
-            Scope actif: <span className="font-semibold text-[#214d70]">{scopeFilter === "all" ? "general" : scopeFilter}</span>
-          </p>
-          <p className="mt-0.5 text-sm text-[#3f627d]">
-            Etat: <span className="font-semibold text-[#214d70]">{queueStatus === "idle" ? "hors file" : queueStatus === "searching" ? "en recherche" : "match trouve"}</span>
-          </p>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="sm" disabled={busyMatchmaking || queueStatus !== "idle"} onClick={() => void handleJoinQueue()}>
-              {busyMatchmaking ? <Loader2 size={14} className="animate-spin" /> : <Swords size={14} />}
-              Entrer en file
-            </Button>
-            <Button size="sm" variant="secondary" disabled={busyMatchmaking || queueStatus !== "searching"} onClick={() => void handleCancelQueue()}>
-              Quitter la file
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={busyMatchmaking || syncingQueue || !myUserId}
-              onClick={() => {
-                if (!myUserId) return;
-                void syncQueueState(myUserId);
-              }}
-            >
-              {syncingQueue ? <Loader2 size={14} className="animate-spin" /> : null}
-              Actualiser
-            </Button>
+    <div className="space-y-4">
+      <section className="game-panel precision-hud-panel animate-in-up rounded-[1.5rem] p-5 lg:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="hud-chip">Ranked Console</p>
+            <h1 className="page-title mt-2">Classe</h1>
           </div>
 
-          {queueMessage ? <p className="mt-2 text-xs text-[#4a6a81]">{queueMessage}</p> : null}
-          {queueStatus === "matched" && queueLobbyId ? (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <p className="text-xs text-[#2a5d87]">Lobby: {queueLobbyId.slice(0, 8)}...</p>
-              <Link href={`/ranked/lobby/${queueLobbyId}`}>
-                <Button size="sm">
-                  <Swords size={14} /> Ouvrir le lobby
-                </Button>
-              </Link>
-            </div>
-          ) : null}
-          {queueStatus !== "idle" ? (
-            <p className="mt-1 text-[11px] uppercase tracking-[0.08em] text-[#6d88a1]">Scope file: {queueScopeLabel}</p>
-          ) : null}
+          <div className="precision-grid-dot rounded-[0.95rem] border border-[var(--line-strong)] bg-[var(--surface-soft)] px-4 py-3 text-right">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Etat</p>
+            <p className="mt-1 font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]">{queueStatusLabel}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="game-panel precision-hud-panel animate-in-up rounded-[1.35rem] p-4" style={{ animationDelay: "60ms" }}>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <p className="text-xs font-bold uppercase tracking-[0.09em] text-[var(--text-muted)]">Queues</p>
+          <Link href="/play">
+            <Button size="sm" variant="secondary"><Target size={14} /> Launcher</Button>
+          </Link>
         </div>
 
-        <div className="mb-3 grid gap-2 rounded-[0.95rem] border border-[#c9d9e8] bg-white/75 p-3 text-xs text-[#3c5e78] md:grid-cols-3">
-          <p>
-            Matchmaking: <span className="font-black text-[#1e4d70]">tiers adjacents uniquement</span>
-          </p>
-          <p>
-            Lobby max: <span className="font-black text-[#1e4d70]">{DEFAULT_LOBBY_MAX_PLAYERS} joueurs</span>
-          </p>
-          <p>
-            Duree cible: <span className="font-black text-[#1e4d70]">{targetDurationMinutes} min</span>
-          </p>
+        <div className="grid gap-3 lg:grid-cols-3">
+          {RANKED_QUEUES.map((queue) => (
+            <button
+              key={queue.key}
+              type="button"
+              data-cursor="interactive"
+              onClick={() => setQueueMode(queue.key)}
+              disabled={queueStatus === "searching"}
+              className={clsx(
+                "precision-grid-dot rounded-[1rem] border p-4 text-left transition",
+                queueMode === queue.key
+                  ? "border-[var(--line-strong)] bg-[rgba(0,255,255,0.12)]"
+                  : "border-[var(--line)] bg-[var(--surface-soft)]"
+              )}
+            >
+              <p className="font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]">{queue.label}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">{queue.maxPlayers} joueurs</p>
+            </button>
+          ))}
         </div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.09em] text-[#587790]">Scopes classes</p>
-        <div className="flex flex-wrap gap-2">
+      </section>
+
+      <section className="game-panel precision-hud-panel animate-in-up rounded-[1.35rem] p-4" style={{ animationDelay: "90ms" }}>
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-[0.95rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3 text-xs text-[var(--text-muted)]">
+          <span className="hud-chip">{queueConfig.label}</span>
+          <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 font-semibold text-[var(--foreground)]">{queueScopeLabel}</span>
+          <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 font-semibold text-[var(--foreground)]">{targetDurationMinutes}m</span>
+        </div>
+
+        <div className="mb-3 flex flex-wrap gap-2">
           <button
             type="button"
+            data-cursor="interactive"
             onClick={() => setScopeFilter("all")}
             className={clsx(
               "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
               scopeFilter === "all"
-                ? "border-[#1f6f9d] bg-[#e8f3fb] text-[#1f5f84]"
-                : "border-[#c9d9e8] bg-white text-[#4d6f87] hover:border-[#97b8d3]"
+                ? "border-[var(--line-strong)] bg-[rgba(0,255,255,0.12)] text-[var(--secondary)]"
+                : "border-[var(--line)] bg-[var(--surface)] text-[var(--text-muted)]"
             )}
           >
             Tous
@@ -355,76 +387,52 @@ export default function RankedPage() {
             <button
               key={scope}
               type="button"
+              data-cursor="interactive"
               onClick={() => setScopeFilter(scope)}
               className={clsx(
                 "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                 scopeFilter === scope
-                  ? "border-[#1f6f9d] bg-[#e8f3fb] text-[#1f5f84]"
-                  : "border-[#c9d9e8] bg-white text-[#4d6f87] hover:border-[#97b8d3]"
+                  ? "border-[var(--line-strong)] bg-[rgba(0,255,255,0.12)] text-[var(--secondary)]"
+                  : "border-[var(--line)] bg-[var(--surface)] text-[var(--text-muted)]"
               )}
             >
               {scope}
             </button>
           ))}
         </div>
-      </div>
 
-      {filteredQuizzes.length === 0 ? (
-        <div className="game-panel rounded-[1.35rem] border border-[#c6d8e8] py-14 text-center">
-          <Trophy size={42} className="mx-auto text-[#8aa2b8]" />
-          <p className="mt-2 text-sm text-[#53758d]">Aucun quiz public pour ce scope.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" disabled={busyMatchmaking || queueStatus !== "idle"} onClick={() => void handleJoinQueue()}>
+            {busyMatchmaking ? <Loader2 size={14} className="animate-spin" /> : <Swords size={14} />}
+            Entrer
+          </Button>
+          <Button size="sm" variant="secondary" disabled={busyMatchmaking || queueStatus !== "searching"} onClick={() => void handleCancelQueue()}>
+            Quitter
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={busyMatchmaking || syncingQueue || !myUserId}
+            onClick={() => {
+              if (!myUserId) return;
+              void syncQueueState(myUserId);
+            }}
+          >
+            {syncingQueue ? <Loader2 size={14} className="animate-spin" /> : null}
+            Sync
+          </Button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          {filteredQuizzes.map((quiz) => {
-            const categoryLabel = normalizeCategoryScope(quiz.category_path, quiz.category);
-            const questionCount = getQuestionCount(quiz);
 
-            return (
-              <div key={quiz.id} className="game-panel interactive-card rounded-[1.35rem] border border-[#c6d8e8] p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-lg font-bold text-[#102c43]">{quiz.title}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-[#4e7089]">
-                      {quiz.description || "Quiz de competition rapide."}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-[#c9d9e8] bg-white/88 px-2 py-0.5 text-xs font-semibold text-[#54758d]">
-                    {questionCount} q
-                  </span>
-                </div>
+        {queueMessage ? <p className="mt-3 text-xs text-[var(--text-muted)]">{queueMessage}</p> : null}
 
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                  <span className="rounded-full bg-[#e7f2fc] px-2 py-0.5 font-semibold text-[#1f5f84]">{categoryLabel}</span>
-                  {quiz.profiles?.[0]?.display_name ? (
-                    <span className="rounded-full bg-[#ecf6ef] px-2 py-0.5 font-semibold text-[#2f6e4e]">Par {quiz.profiles[0].display_name}</span>
-                  ) : null}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Link href={`/quizzes/${quiz.id}/play?mode=ranked&scope=general`}>
-                    <Button size="sm"><Swords size={14} /> Classé general</Button>
-                  </Link>
-                  <Link href={`/quizzes/${quiz.id}/play?mode=ranked&scope=category`}>
-                    <Button size="sm" variant="secondary"><Medal size={14} /> Classe spec.</Button>
-                  </Link>
-                  <Link href={`/quizzes/${quiz.id}/play`}>
-                    <Button size="sm" variant="secondary"><Target size={14} /> Entrainement</Button>
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="game-panel animate-in-up rounded-[1.3rem] border border-[#c6d8e8] p-4 text-sm text-[#4f7088]" style={{ animationDelay: "140ms" }}>
-        <p className="inline-flex items-center gap-2 font-semibold text-[#274c68]">
-          <Flame size={14} className="text-[#de5d5d]" />
-          Regles rapide:
-        </p>
-        <p className="mt-1">Bonne reponse: points gagnes. Mauvaise reponse ou timeout: points perdus. Plus ton rang monte, plus gagner devient difficile.</p>
-      </div>
+        {queueStatus === "matched" && queueLobbyId ? (
+          <div className="mt-3">
+            <Link href={`/ranked/lobby/${queueLobbyId}`}>
+              <Button size="sm"><Swords size={14} /> Ouvrir le lobby</Button>
+            </Link>
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }

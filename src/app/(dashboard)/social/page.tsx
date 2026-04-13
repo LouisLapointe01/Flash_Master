@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clsx } from "clsx";
 import { normalizeCategoryScope } from "@/lib/utils/ranked";
-import { Handshake, Send, Shield, Trophy, Users } from "lucide-react";
+import { BellRing, Handshake, Send, Shield, Trophy, Users } from "lucide-react";
 import type { Quiz } from "@/lib/types";
 import { HeroSignalVisual } from "@/components/branding/hero-signal-visual";
 
@@ -15,8 +16,16 @@ type FriendshipRow = {
   requester_id: string;
   addressee_id: string;
   status: "pending" | "accepted" | "rejected";
-  requester?: Array<{ display_name: string }>;
-  addressee?: Array<{ display_name: string }>;
+  requester?: Array<{ display_name: string | null }>;
+  addressee?: Array<{ display_name: string | null }>;
+};
+
+type PresenceStatus = "online" | "dnd" | "offline";
+
+type FriendPresenceRow = {
+  user_id: string;
+  status: PresenceStatus;
+  last_seen_at: string;
 };
 
 type AssociationRow = {
@@ -38,7 +47,50 @@ type ChallengeRow = {
   opponent?: Array<{ display_name: string }>;
 };
 
+type LobbyInvitationRow = {
+  id: string;
+  lobby_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: "pending" | "accepted" | "declined" | "expired" | "cancelled";
+  created_at: string;
+  inviter?: Array<{ display_name: string | null }>;
+};
+
+function getEffectivePresence(status?: PresenceStatus, lastSeenAt?: string) {
+  if (!status) return "offline" as const;
+  if (status === "dnd") return "dnd" as const;
+  if (status === "offline") return "offline" as const;
+
+  const lastSeenMs = lastSeenAt ? new Date(lastSeenAt).getTime() : 0;
+  if (!lastSeenMs) return "offline" as const;
+  if (Date.now() - lastSeenMs > 3 * 60 * 1000) return "offline" as const;
+  return "online" as const;
+}
+
+function getPresenceLabel(status: PresenceStatus) {
+  if (status === "online") return "En ligne";
+  if (status === "dnd") return "Ne pas deranger";
+  return "Deconnecte";
+}
+
+function getPresenceClass(status: PresenceStatus) {
+  if (status === "online") return "border-emerald-400/40 bg-emerald-500/12 text-emerald-300";
+  if (status === "dnd") return "border-amber-400/40 bg-amber-500/12 text-amber-300";
+  return "border-[var(--line)] bg-[var(--surface-soft)] text-[var(--text-muted)]";
+}
+
+function getLobbyInviteMessage(status: string) {
+  if (status === "accepted") return "Invitation acceptee. Entree dans le lobby.";
+  if (status === "declined") return "Invitation refusee.";
+  if (status === "expired") return "Invitation expiree: lobby indisponible.";
+  if (status === "lobby_full") return "Lobby plein.";
+  if (status === "lobby_missing") return "Lobby introuvable.";
+  return "Invitation mise a jour.";
+}
+
 export default function SocialPage() {
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState(true);
   const [myUserId, setMyUserId] = useState<string | null>(null);
@@ -47,16 +99,68 @@ export default function SocialPage() {
   const [myMemberships, setMyMemberships] = useState<string[]>([]);
   const [quizzes, setQuizzes] = useState<Array<Pick<Quiz, "id" | "title" | "category" | "category_path">>>([]);
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
+  const [lobbyInvitations, setLobbyInvitations] = useState<LobbyInvitationRow[]>([]);
+  const [presenceByFriendId, setPresenceByFriendId] = useState<Record<string, PresenceStatus>>({});
+  const [myPresence, setMyPresence] = useState<PresenceStatus>("online");
 
   const [friendSearch, setFriendSearch] = useState("");
   const [friendError, setFriendError] = useState<string | null>(null);
+  const [socialMessage, setSocialMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [challengeMode, setChallengeMode] = useState<"ranked" | "training">("ranked");
   const [challengeQuizId, setChallengeQuizId] = useState("");
   const [challengeFriendId, setChallengeFriendId] = useState("");
 
+  const loadFriendships = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("friendships")
+      .select("id, requester_id, addressee_id, status, requester:requester_id(display_name), addressee:addressee_id(display_name)")
+      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+      .order("created_at", { ascending: false });
+
+    const loaded = ((data as unknown as FriendshipRow[]) ?? []);
+    setFriendships(loaded);
+    return loaded;
+  }, [supabase]);
+
+  const loadLobbyInvitations = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("lobby_invitations")
+      .select("id, lobby_id, inviter_id, invitee_id, status, created_at, inviter:inviter_id(display_name)")
+      .eq("invitee_id", userId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(25);
+
+    setLobbyInvitations((data as unknown as LobbyInvitationRow[]) ?? []);
+  }, [supabase]);
+
+  const loadFriendPresence = useCallback(async (friendIds: string[]) => {
+    if (friendIds.length === 0) {
+      setPresenceByFriendId({});
+      return;
+    }
+
+    const { data } = await supabase
+      .from("user_presence")
+      .select("user_id, status, last_seen_at")
+      .in("user_id", friendIds);
+
+    const rows = (data as FriendPresenceRow[]) ?? [];
+    const map: Record<string, PresenceStatus> = {};
+
+    for (const friendId of friendIds) {
+      const row = rows.find((item) => item.user_id === friendId);
+      map[friendId] = getEffectivePresence(row?.status, row?.last_seen_at);
+    }
+
+    setPresenceByFriendId(map);
+  }, [supabase]);
+
   useEffect(() => {
+    let active = true;
+
     async function load() {
       setLoading(true);
 
@@ -71,12 +175,7 @@ export default function SocialPage() {
 
       setMyUserId(user.id);
 
-      const [friendshipsRes, associationsRes, membershipsRes, quizzesRes, challengesRes] = await Promise.all([
-        supabase
-          .from("friendships")
-          .select("id, requester_id, addressee_id, status, requester:requester_id(display_name), addressee:addressee_id(display_name)")
-          .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-          .order("created_at", { ascending: false }),
+      const [associationsRes, membershipsRes, quizzesRes, challengesRes, myPresenceRes] = await Promise.all([
         supabase
           .from("associations")
           .select("id, name, slug, description, category_path")
@@ -98,25 +197,40 @@ export default function SocialPage() {
           .or(`creator_id.eq.${user.id},opponent_id.eq.${user.id}`)
           .order("created_at", { ascending: false })
           .limit(50),
+        supabase
+          .from("user_presence")
+          .select("status")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
+
+      if (!active) return;
 
       const loadedQuizzes = (quizzesRes.data as Array<Pick<Quiz, "id" | "title" | "category" | "category_path">>) ?? [];
 
-      setFriendships(((friendshipsRes.data as unknown as FriendshipRow[]) ?? []));
       setAssociations((associationsRes.data as AssociationRow[]) ?? []);
       setMyMemberships(((membershipsRes.data as Array<{ association_id: string }>) ?? []).map((item) => item.association_id));
       setQuizzes(loadedQuizzes);
       setChallenges(((challengesRes.data as unknown as ChallengeRow[]) ?? []));
+      setMyPresence(((myPresenceRes.data as { status: PresenceStatus } | null)?.status) ?? "online");
 
-      if (!challengeQuizId && loadedQuizzes.length > 0) {
-        setChallengeQuizId(loadedQuizzes[0].id);
+      await Promise.all([
+        loadFriendships(user.id),
+        loadLobbyInvitations(user.id),
+      ]);
+
+      if (!active) return;
+
+      if (loadedQuizzes.length > 0) {
+        setChallengeQuizId((current) => current || loadedQuizzes[0].id);
       }
 
       setLoading(false);
     }
 
     void load();
-  }, [challengeQuizId, supabase]);
+    return () => { active = false; };
+  }, [loadFriendships, loadLobbyInvitations, supabase]);
 
   const acceptedFriends = useMemo(() => {
     if (!myUserId) return [] as Array<{ id: string; label: string }>;
@@ -131,39 +245,65 @@ export default function SocialPage() {
       });
   }, [friendships, myUserId]);
 
+  const acceptedFriendIds = useMemo(() => acceptedFriends.map((friend) => friend.id), [acceptedFriends]);
+
   const pendingReceived = useMemo(() => {
     if (!myUserId) return [] as FriendshipRow[];
     return friendships.filter((item) => item.status === "pending" && item.addressee_id === myUserId);
   }, [friendships, myUserId]);
 
+  useEffect(() => {
+    if (!myUserId) return;
+
+    void loadFriendPresence(acceptedFriendIds);
+    const intervalId = window.setInterval(() => {
+      void loadFriendPresence(acceptedFriendIds);
+    }, 12000);
+
+    return () => window.clearInterval(intervalId);
+  }, [acceptedFriendIds, loadFriendPresence, myUserId]);
+
+  useEffect(() => {
+    if (!myUserId) return;
+
+    const intervalId = window.setInterval(() => {
+      void loadLobbyInvitations(myUserId);
+    }, 9000);
+
+    return () => window.clearInterval(intervalId);
+  }, [loadLobbyInvitations, myUserId]);
+
+  useEffect(() => {
+    if (!myUserId) return;
+
+    const pushPresence = async () => {
+      await supabase.rpc("set_my_presence", { p_status: myPresence });
+    };
+
+    void pushPresence();
+    const intervalId = window.setInterval(() => {
+      void pushPresence();
+    }, 45000);
+
+    return () => window.clearInterval(intervalId);
+  }, [myPresence, myUserId, supabase]);
+
+  useEffect(() => {
+    if (!myUserId) return;
+
+    return () => {
+      void supabase.rpc("set_my_presence", { p_status: "offline" });
+    };
+  }, [myUserId, supabase]);
+
   async function sendFriendRequest() {
     if (!friendSearch.trim() || !myUserId) return;
     setBusy(true);
     setFriendError(null);
+    setSocialMessage(null);
 
-    const { data: target } = await supabase
-      .from("profiles")
-      .select("id, display_name")
-      .ilike("display_name", friendSearch.trim())
-      .limit(1)
-      .maybeSingle();
-
-    if (!target) {
-      setFriendError("Aucun profil trouve.");
-      setBusy(false);
-      return;
-    }
-
-    if (target.id === myUserId) {
-      setFriendError("Tu ne peux pas t'ajouter toi-meme.");
-      setBusy(false);
-      return;
-    }
-
-    const { error } = await supabase.from("friendships").insert({
-      requester_id: myUserId,
-      addressee_id: target.id,
-      status: "pending",
+    const { data, error } = await supabase.rpc("send_friend_request_by_display_name", {
+      p_display_name: friendSearch.trim(),
     });
 
     if (error) {
@@ -172,34 +312,67 @@ export default function SocialPage() {
       return;
     }
 
+    const payload = (data ?? {}) as { status?: string; target_display_name?: string };
+
+    if (payload.status === "not_found") {
+      setFriendError("Aucun profil trouve.");
+      setBusy(false);
+      return;
+    }
+
+    if (payload.status === "self") {
+      setFriendError("Tu ne peux pas t'ajouter toi-meme.");
+      setBusy(false);
+      return;
+    }
+
+    if (payload.status === "already_friends") {
+      setFriendError("Vous etes deja amis.");
+      setBusy(false);
+      return;
+    }
+
+    if (payload.status === "already_pending") {
+      setFriendError("Demande deja envoyee.");
+      setBusy(false);
+      return;
+    }
+
+    if (payload.status === "auto_accepted") {
+      setSocialMessage("Ami ajoute automatiquement.");
+    } else {
+      setSocialMessage("Demande d'ami envoyee.");
+    }
+
     setFriendSearch("");
+    await loadFriendships(myUserId);
     setBusy(false);
-
-    const { data } = await supabase
-      .from("friendships")
-      .select("id, requester_id, addressee_id, status, requester:requester_id(display_name), addressee:addressee_id(display_name)")
-      .or(`requester_id.eq.${myUserId},addressee_id.eq.${myUserId}`)
-      .order("created_at", { ascending: false });
-
-    setFriendships(((data as unknown as FriendshipRow[]) ?? []));
   }
 
   async function respondFriendRequest(friendshipId: string, accepted: boolean) {
     if (!myUserId) return;
     setBusy(true);
+    setSocialMessage(null);
 
-    await supabase
-      .from("friendships")
-      .update({ status: accepted ? "accepted" : "rejected" })
-      .eq("id", friendshipId);
+    const { data, error } = await supabase.rpc("respond_friend_request", {
+      p_friendship_id: friendshipId,
+      p_accept: accepted,
+    });
 
-    const { data } = await supabase
-      .from("friendships")
-      .select("id, requester_id, addressee_id, status, requester:requester_id(display_name), addressee:addressee_id(display_name)")
-      .or(`requester_id.eq.${myUserId},addressee_id.eq.${myUserId}`)
-      .order("created_at", { ascending: false });
+    if (error) {
+      setFriendError(error.message);
+      setBusy(false);
+      return;
+    }
 
-    setFriendships(((data as unknown as FriendshipRow[]) ?? []));
+    const payload = (data ?? {}) as { status?: string };
+    if (payload.status === "accepted") {
+      setSocialMessage("Demande acceptee.");
+    } else if (payload.status === "rejected") {
+      setSocialMessage("Demande refusee.");
+    }
+
+    await loadFriendships(myUserId);
     setBusy(false);
   }
 
@@ -253,6 +426,36 @@ export default function SocialPage() {
     setBusy(false);
   }
 
+  async function respondLobbyInvitation(invitationId: string, accepted: boolean, lobbyId: string) {
+    if (!myUserId) return;
+
+    setBusy(true);
+    setSocialMessage(null);
+
+    const { data, error } = await supabase.rpc("respond_lobby_invitation", {
+      p_invitation_id: invitationId,
+      p_accept: accepted,
+    });
+
+    if (error) {
+      setSocialMessage(error.message);
+      setBusy(false);
+      return;
+    }
+
+    const payload = (data ?? {}) as { status?: string; lobby_id?: string };
+    const effectiveLobbyId = payload.lobby_id ?? lobbyId;
+
+    if (accepted && payload.status === "accepted" && effectiveLobbyId) {
+      router.push(`/ranked/lobby/${effectiveLobbyId}`);
+      return;
+    }
+
+    setSocialMessage(getLobbyInviteMessage(payload.status ?? "updated"));
+    await loadLobbyInvitations(myUserId);
+    setBusy(false);
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -267,16 +470,29 @@ export default function SocialPage() {
         <div className="section-hero">
           <div>
             <p className="hud-chip">Social Hub</p>
-            <h1 className="page-title mt-2">Social</h1>
-            <p className="mt-2 max-w-xl text-sm text-[var(--text-muted)]">Ajoute des amis, rejoins des assos, et lance des challenges sans friction.</p>
+            <h1 className="page-title mt-2">Escouade</h1>
+            <p className="mt-2 max-w-xl text-sm text-[var(--text-muted)]">Ajoute des amis et remplis tes lobbys avec un filtre simple: en ligne, ne pas deranger, deconnecte.</p>
+
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-1.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Presence</p>
+              <select
+                value={myPresence}
+                onChange={(event) => setMyPresence(event.target.value as PresenceStatus)}
+                className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)]"
+              >
+                <option value="online">En ligne</option>
+                <option value="dnd">Ne pas deranger</option>
+                <option value="offline">Deconnecte</option>
+              </select>
+            </div>
           </div>
 
           <HeroSignalVisual
             tag="Social pulse"
-            title="Reseau et defis"
+            title="Reseau actif"
             icon={Users}
             accent="green"
-            chips={[`${acceptedFriends.length} amis`, `${associations.length} assos`, `${challenges.length} challenges`]}
+            chips={[`${acceptedFriends.length} amis`, `${lobbyInvitations.length} invites`, `${associations.length} assos`, `${challenges.length} challenges`]}
           />
         </div>
       </div>
@@ -314,14 +530,17 @@ export default function SocialPage() {
 
           <div className="mt-4">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Amis valides ({acceptedFriends.length})</p>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-2 space-y-2">
               {acceptedFriends.length === 0 ? (
                 <span className="text-xs text-[var(--text-muted)]">Aucun ami valide.</span>
               ) : (
                 acceptedFriends.map((friend) => (
-                  <span key={friend.id} className="rounded-full border border-[var(--line)] bg-[var(--surface-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)]">
-                    {friend.label}
-                  </span>
+                  <div key={friend.id} className="flex items-center justify-between gap-2 rounded-[0.9rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-2">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">{friend.label}</p>
+                    <span className={clsx("rounded-full border px-2 py-0.5 text-[11px] font-semibold", getPresenceClass(presenceByFriendId[friend.id] ?? "offline"))}>
+                      {getPresenceLabel(presenceByFriendId[friend.id] ?? "offline")}
+                    </span>
+                  </div>
                 ))
               )}
             </div>
@@ -357,6 +576,34 @@ export default function SocialPage() {
           </div>
         </div>
       </div>
+
+      <div className="game-panel animate-in-up p-4" style={{ animationDelay: "118ms" }}>
+        <p className="mb-3 inline-flex items-center gap-2 font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]"><BellRing size={14} /> Invitations lobby recues</p>
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+          {lobbyInvitations.length === 0 ? (
+            <p className="text-xs text-[var(--text-muted)]">Aucune invitation lobby en attente.</p>
+          ) : (
+            lobbyInvitations.map((invitation) => (
+              <div key={invitation.id} className="rounded-[0.95rem] border border-[var(--line)] bg-[var(--surface-soft)] p-3">
+                <p className="text-sm font-semibold text-[var(--foreground)]">{invitation.inviter?.[0]?.display_name ?? "Un joueur"}</p>
+                <p className="mt-0.5 text-xs text-[var(--text-muted)]">Lobby {invitation.lobby_id.slice(0, 8)}...</p>
+                <div className="mt-2 flex gap-2">
+                  <Button size="sm" disabled={busy} onClick={() => void respondLobbyInvitation(invitation.id, true, invitation.lobby_id)}>
+                    Rejoindre
+                  </Button>
+                  <Button size="sm" variant="secondary" disabled={busy} onClick={() => void respondLobbyInvitation(invitation.id, false, invitation.lobby_id)}>
+                    Refuser
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {socialMessage ? (
+        <p className="text-xs text-[var(--text-muted)]">{socialMessage}</p>
+      ) : null}
 
       <div className="game-panel animate-in-up p-4" style={{ animationDelay: "130ms" }}>
         <p className="mb-3 inline-flex items-center gap-2 font-mono text-sm font-black uppercase tracking-[0.08em] text-[var(--foreground)]"><Handshake size={14} /> Lancer une partie entre proches</p>

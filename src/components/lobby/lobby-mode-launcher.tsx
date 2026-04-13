@@ -33,7 +33,7 @@ const LOBBY_MODES: LobbyMode[] = [
   },
   {
     key: "social",
-    title: "Duel social",
+    title: "Escouade",
     subtitle: "Defis prives avec tes amis et tes associations.",
     href: "/social",
     badge: "Friends",

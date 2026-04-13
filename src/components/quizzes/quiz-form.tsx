@@ -78,11 +78,11 @@ export function QuizForm({ initialValues, onSubmit, onCancel, submitLabel = "Cr�
         placeholder="Science > Biologie > Ornithologie"
       />
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#5a5549]">Visibilité</label>
+        <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">Visibilité</label>
         <div className="flex gap-3">
           {(["private", "public", "link_only"] as const).map((v) => (
             <button key={v} type="button" onClick={() => setVisibility(v)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${visibility === v ? "border border-[#54462f] bg-[linear-gradient(140deg,#655438,#4f422e)] text-[#fff9ef]" : "border border-[#d4cab8] bg-white text-[#585042] hover:border-[#b9aa90]"}`}>
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${visibility === v ? "border border-[var(--line-strong)] bg-[linear-gradient(145deg,#143326,#0d251a)] text-[var(--primary)]" : "border border-[var(--line)] bg-[var(--surface-soft)] text-[var(--text-muted)] hover:border-[var(--line-strong)] hover:text-[var(--foreground)]"}`}>
               {v === "private" ? "Privé" : v === "public" ? "Public" : "Lien privé"}
             </button>
           ))}
